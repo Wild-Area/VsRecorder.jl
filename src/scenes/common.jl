@@ -1,5 +1,3 @@
-abstract type AbstractPokemonScene <: AbstractVsScene end
-
 function vs_tryparse_scene(
     ::Type{T},
     frame::VsFrame,

@@ -22,8 +22,8 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - run: julia --project=. -e "using Pkg; Pkg.develop(\"https://github.com/Wild-Area/VsRecorderBase.jl\")"
-      - run: julia --project=. -e "using Pkg; Pkg.develop(\"https://github.com/sunoru/SimpleI18n.jl\")"
+      - run: julia --project=. -e "using Pkg; Pkg.develop(url=\"https://github.com/Wild-Area/VsRecorderBase.jl.git\")"
+      - run: julia --project=. -e "using Pkg; Pkg.develop(url=\"https://github.com/sunoru/SimpleI18n.jl.git\")"
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v2

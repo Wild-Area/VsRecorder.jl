@@ -8,6 +8,9 @@ using VsRecorderBase
 include("i18n.jl")
 
 include("config.jl")
+include("types/base.jl")
+include("types/pokemon.jl")
+include("types/result.jl")
 
 include("scenes/searching.jl")
 

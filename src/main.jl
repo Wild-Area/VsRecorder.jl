@@ -1,9 +1,11 @@
-import VsRecorderBase: vs_tryparse_scene
+import VsRecorderBase: vs_tryparse_scene, vs_result
 import VsRecorderBase.DefaultStrategyModule: feature_image_and_masks
 
-function VsRecorderBase.vs_init!(ctx::VsContext{DefaultStrategy, PokemonBattle})
+function VsRecorderBase.vs_init!(ctx::PokemonBattleContext{DefaultStrategy})
     invoke(vs_init!, ctx, VsContext{DefaultStrategy})
-    # data = ctx.data
+    data = ctx.data
+    # TODO
+    data.turns = Turn[]
 end
 
 const AvailableScenes = Type[
@@ -24,4 +26,12 @@ function feature_image_and_masks(source::PokemonBattle, ctx::VsContext)
         mask = load_data("scenes", "mask", filename)
         (scene_type, img, mask)
     end
+end
+
+function vs_result(ctx::PokemonBattleContext)
+# TODO
+    battles = Battle[]
+    PokemonBattleResult(
+        battles = battles
+    )
 end
