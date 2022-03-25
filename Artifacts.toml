@@ -1,0 +1,6 @@
+[data]
+git-tree-sha1 = "113db057ea8fd9dd2ed6814748e832a38653cb43"
+
+    [[data.download]]
+    url = "https://github.com/Wild-Area/vs-recorder-data/archive/refs/tags/v0.0.1-test.tar.gz"
+    sha256 = "35bb313d6d526a52ff3aba21467964674f0d5f75a60585ac3439c0f81ca542cc"
