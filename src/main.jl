@@ -6,7 +6,9 @@ function VsRecorderBase.vs_init!(ctx::PokemonBattleContext{DefaultStrategy})
     data = ctx.data
     # TODO
     data.battles = Battle[]
+    data.parsed_battles = ParsedBattle[]
     data.current_battle = nothing
+    data.current_parsed_battle = nothing
 end
 
 const AvailableScenes = Type[
@@ -29,17 +31,12 @@ function feature_image_and_masks(source::PokemonBattle, ctx::VsContext)
     end
 end
 
-function parse_battle!(battle::Battle)
-# TODO
-    battle
-end
-
 function vs_result(ctx::PokemonBattleContext)
-    battles = ctx.data.battles
-    if ctx.config.source.parse_battle
-        battles = parse_battle!.(battles)
-    end
+    data = ctx.data
+    battles = data.battles
+    parsed_battles = data.parsed_battles
     PokemonBattleResult(
-        battles = battles
+        battles = battles,
+        parsed_battles = parsed_battles
     )
 end

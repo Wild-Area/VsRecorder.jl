@@ -1,11 +1,26 @@
 # Using mutable to allow missing values
 
 # All values will be English names so that the `yaml` files will be human-readable.
+const PokemonID = String
+
+@missable mutable struct Stats
+    hp::Int
+    attack::Int
+    defense::Int
+    special_attack::Int
+    special_defense::Int
+    speed::Int
+end
+
 @missable mutable struct Pokemon
-    id::String
+    id::PokemonID
     moves::Vector{String} = String[]
     gender::Union{Nothing, Bool}
     item::String
     stats::Stats
     ability::String
+    sent_out::Bool = false
+    dynamaxed::Bool = false
 end
+
+const Team = Vector{Pokemon}

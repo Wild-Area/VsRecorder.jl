@@ -8,7 +8,8 @@ Base.@kwdef struct PokemonBattle <: AbstractVsSource
     double::Bool = true
     # (height, width)
     image_size = (720, 1280)
-    parse_battle = false
+    parse_battle = true
+    parse_player_A = false
 end
 
 const GlobalVsConfig = Ref{Union{
@@ -22,7 +23,9 @@ function VsRecorderBase.vs_setup(
     double = true,
     num_skip_frames = 59,
     use_gray_image = true,
+    image_size = (720, 1280),
     parse_battle = false,
+    parse_player_A = true,
     gaussian_filter_σ = 0.5,
     match_threshold = 0.05
 )
@@ -32,7 +35,10 @@ ocr_language = OCR_LANGUAGES[language]
 strategy = DefaultStrategy(match_threshold = match_threshold)
 source = PokemonBattle(
     language = language,
-    double = double
+    double = double,
+    image_size = image_size,
+    parse_battle = parse_battle,
+    parse_player_A = parse_player_A
 )
 
 config = VsConfig(
