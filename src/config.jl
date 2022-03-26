@@ -4,10 +4,11 @@
 Only works for double ranked battles right now.
 """
 Base.@kwdef struct PokemonBattle <: AbstractVsSource
-    language::String
+    language::GameLanguage
     double::Bool = true
     # (height, width)
     image_size = (720, 1280)
+    parse_battle = false
 end
 
 const GlobalVsConfig = Ref{Union{
@@ -17,23 +18,16 @@ const GlobalVsConfig = Ref{Union{
 
 function VsRecorderBase.vs_setup(
     ::Type{PokemonBattle};
-    language = "en",
+    language::GameLanguage = EN,
     double = true,
     num_skip_frames = 59,
     use_gray_image = true,
+    parse_battle = false,
     gaussian_filter_σ = 0.5,
     match_threshold = 0.05
 )
 
-if !haskey(LANGUAGES, language)
-    error(string(
-        "Unsupported language \`$language\`. Select one of the followings:\n[",
-        join(", ", sort(keys(LANGUAGES))),
-        "]"
-    ))
-end
-
-set_language!(GlobalI18nContext, language, String[])
+set_language!(GlobalI18nContext, lowercase(string(language)), String[])
 ocr_language = OCR_LANGUAGES[language]
 strategy = DefaultStrategy(match_threshold = match_threshold)
 source = PokemonBattle(

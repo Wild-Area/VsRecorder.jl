@@ -7,14 +7,26 @@ function initialize_i18n()
     )
 end
 
+@enum GameLanguage begin
+    EN
+    ZHS
+    ZHT
+    JA
+    KO
+    ES
+    FR
+    DE
+    IT
+end
+
 const OCR_LANGUAGES = Dict(
-    "en" => "eng",
-    "zh-Hans" => "chi_sim",
-    "zh-Hant" => "chi_tra",
-    "ja" => "jpn",
-    "es" => "spa",
-    "fr" => "fra",
-    "de" => "deu",
-    "it" => "ita",
-    "ko" => "kor",
+    EN => "eng",
+    ZHS => "chi_sim",
+    ZHT => "chi_tra",
+    JA => "jpn",
+    ES => "spa",
+    FR => "fra",
+    DE => "deu",
+    IT => "ita",
+    KO => "kor",
 )

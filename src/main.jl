@@ -5,7 +5,8 @@ function VsRecorderBase.vs_init!(ctx::PokemonBattleContext{DefaultStrategy})
     invoke(vs_init!, ctx, VsContext{DefaultStrategy})
     data = ctx.data
     # TODO
-    data.turns = Turn[]
+    data.battles = Battle[]
+    data.current_battle = nothing
 end
 
 const AvailableScenes = Type[
@@ -28,9 +29,16 @@ function feature_image_and_masks(source::PokemonBattle, ctx::VsContext)
     end
 end
 
-function vs_result(ctx::PokemonBattleContext)
+function parse_battle!(battle::Battle)
 # TODO
-    battles = Battle[]
+    battle
+end
+
+function vs_result(ctx::PokemonBattleContext)
+    battles = ctx.data.battles
+    if ctx.config.source.parse_battle
+        battles = parse_battle!.(battles)
+    end
     PokemonBattleResult(
         battles = battles
     )
