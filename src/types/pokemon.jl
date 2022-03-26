@@ -16,6 +16,7 @@ end
     id::PokemonID
     moves::Vector{String} = String[]
     gender::Union{Nothing, Bool}
+    level::Int64
     item::String
     stats::Stats
     ability::String

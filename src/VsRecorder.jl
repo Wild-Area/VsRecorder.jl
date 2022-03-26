@@ -1,6 +1,6 @@
 module VsRecorder
 
-using Artifacts
+using Artifacts, Dates
 
 using SimpleI18n
 using VsRecorderBase
@@ -14,7 +14,7 @@ include("types/pokemon.jl")
 include("types/battle.jl")
 include("types/result.jl")
 
-include("scenes/searching.jl")
+include("scenes/Scenes.jl")
 
 include("main.jl")
 

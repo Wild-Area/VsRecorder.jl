@@ -54,6 +54,6 @@ end
 # Parsed Data from events
 @missable mutable struct ParsedBattle
     result::BattleEnums.BattleResult
-    teamA::Team = Pokemon[]
-    teamB::Team = Pokemon[]
+    team_a::Team = Pokemon[]
+    team_b::Team = Pokemon[]
 end
