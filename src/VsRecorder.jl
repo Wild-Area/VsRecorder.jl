@@ -6,12 +6,14 @@ using SimpleI18n
 using VsRecorderBase
 
 include("i18n.jl")
+include("data.jl")
 
 include("config.jl")
 include("types/base.jl")
 include("types/player.jl")
 include("types/pokemon.jl")
 include("types/battle.jl")
+include("types/context.jl")
 include("types/result.jl")
 
 include("scenes/Scenes.jl")
