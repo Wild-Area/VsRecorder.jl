@@ -25,3 +25,5 @@ end
 end
 
 const Team = Vector{Pokemon}
+
+get_name(id::PokemonID) = i18n(GlobalI18nContext[], "pokemon.$(id)")

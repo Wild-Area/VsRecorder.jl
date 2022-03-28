@@ -1,4 +1,4 @@
-const GlobalI18nContext = []
+const GlobalI18nContext = Ref{Union{Nothing, SimpleI18n.I18nContext}}(nothing)
 
 function initialize_i18n()
     GlobalI18nContext[] = SimpleI18n.setup(
