@@ -2,8 +2,10 @@ module Scenes
 
 using VsRecorderBase
 using ..VsRecorder: AbstractPokemonScene,
-    PokemonBattle, PokemonContext, BattleContext, PokemonID,
-    Battle, ParsedBattle
+    PokemonBattle, PokemonContext, BattleContext,
+    PokemonID, Gender,
+    Battle, ParsedBattle,
+    default_context
 using ..Data
 
 include("common.jl")

@@ -1,7 +1,7 @@
 @nullable mutable struct BattleContext
     parsed_scenes::Dict{Type{<:AbstractPokemonScene}, AbstractPokemonScene} = Dict()
     battle::Battle = Battle()
-    parsed_battle::Battle = ParsedBattle()
+    parsed_battle::ParsedBattle = ParsedBattle()
 end
 
 @nullable mutable struct ParsingContext

@@ -7,7 +7,9 @@ using VsRecorderBase
 
 include("i18n.jl")
 include("data.jl")
+include("io.jl")
 
+export PokemonBattle
 include("config.jl")
 include("types/base.jl")
 include("types/player.jl")

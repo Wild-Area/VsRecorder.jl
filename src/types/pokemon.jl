@@ -2,6 +2,7 @@
 
 # All values will be English names so that the `yaml` files will be human-readable.
 const PokemonID = String
+const Gender = Union{Nothing, Bool}
 
 @missable mutable struct Stats
     hp::Int
@@ -15,7 +16,7 @@ end
 @missable mutable struct Pokemon
     id::PokemonID
     moves::Vector{String} = String[]
-    gender::Union{Nothing, Bool}
+    gender::Gender
     level::Int64
     item::String
     stats::Stats

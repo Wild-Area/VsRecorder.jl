@@ -5,11 +5,11 @@ Only works for double ranked battles right now.
 """
 Base.@kwdef struct PokemonBattle <: AbstractVsSource
     language::GameLanguage
-    double::Bool = true
+    double::Bool
     # (height, width)
-    image_size = (960, 540)
-    parse_battle = true
-    parse_player_a = false
+    image_size::Tuple{Int, Int}
+    parse_battle::Bool
+    parse_player_a::Bool
 end
 
 const GlobalVsConfig = Ref{Union{
@@ -23,15 +23,23 @@ function VsRecorderBase.vs_setup(
     double = true,
     num_skip_frames = 59,
     use_gray_image = true,
+    feature_size = (360, 640),
     image_size = (960, 540),
-    parse_battle = false,
-    parse_player_a = true,
-    match_threshold = 0.05
+    parse_battle = true,
+    parse_player_a = false,
+    match_threshold = 0.05,
+    set_global = true,
+    init_descriptors = true
 )
 
-set_language!(GlobalI18nContext, lowercase(string(language)), String[])
+set_language!(GlobalI18nContext[], lowercase(string(language)), String[])
 ocr_language = OCR_LANGUAGES[language]
-strategy = DefaultStrategy(match_threshold = match_threshold)
+strategy = DefaultStrategy(
+    match_threshold = match_threshold,
+    height = feature_size[1],
+    width = feature_size[2],
+    init_descriptors = init_descriptors
+)
 source = PokemonBattle(
     language = language,
     double = double,
@@ -55,3 +63,10 @@ end
 config
 
 end
+
+default_config() = isnothing(GlobalVsConfig[]) ? vs_setup(
+    PokemonBattle, parse_player_a = true, set_global = false,
+    init_descriptors = false
+) : GlobalVsConfig[]
+
+default_context() = VsRecorderBase.initialize(default_config())

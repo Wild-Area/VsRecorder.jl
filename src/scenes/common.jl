@@ -1,3 +1,5 @@
+const DesignResolution = (1080, 1920)
+
 frame_time(scene::AbstractPokemonScene) = scene.frame_time
 
 function get_current_context!(ctx::PokemonContext)::BattleContext
@@ -14,7 +16,11 @@ end
 still_available(::Nothing, ::PokemonContext) = false
 still_available(scene::AbstractPokemonScene, ::PokemonContext) = false
 
-vs_tryparse_scene(T::Type{<:AbstractPokemonScene}, frame::VsFrame, ctx::PokemonContext) = try
+VsRecorderBase.vs_tryparse_scene(
+    T::Type{<:AbstractPokemonScene},
+    frame::VsFrame,
+    ctx::PokemonContext = default_context()
+) = try
     if ctx.current_frame != frame
         ctx.current_frame = frame
     end
@@ -24,5 +30,6 @@ vs_tryparse_scene(T::Type{<:AbstractPokemonScene}, frame::VsFrame, ctx::PokemonC
     current.parsed_scenes[T] = _parse_scene(T, frame, ctx)
 catch e
     ctx.data.last_error = e
+    rethrow(e)
     nothing
 end
