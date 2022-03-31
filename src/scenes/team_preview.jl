@@ -1,4 +1,5 @@
-const TeamPreviewIconSheetRect = Rect((13, 1), (100, 136))
+const PokeIconSize = (100, 132)
+const PokeIconSheetRect = Rect((13, 1), PokeIconSize)
 const TeamPreviewPlayerBoxRects = [
     # Team A
     Rect((125, 301), (784, 422), resolution = DesignResolution),
@@ -10,17 +11,18 @@ const TeamPreviewPlayerBoxRects = [
     Rect((191, 103), (784, 422), resolution = DesignResolution),
 ]
 const TeamPreviewPokemonIconRects = [
-    Rect((64 + 120 * (i - 1), 8), (100, 136), resolution = DesignResolution)
+    Rect((64 + 120 * (i - 1), 8), PokeIconSize, resolution = DesignResolution)
     for i in 1:6
 ]
 const TeamPreviewSelectingPokemonIconRects = [
-    Rect((14 + 144 * (i - 1), 2), (100, 136), resolution = DesignResolution)
+    Rect((14 + 144 * (i - 1), 2), PokeIconSize, resolution = DesignResolution)
     for i in 1:6
 ]
 
 struct TeamPreview <: AbstractPokemonScene
     frame_time::Float64
     team_a::Vector{PokemonID}
+    uncertain::Int
     team_b::Vector{PokemonID}
     genders_a::Vector{Gender}
     genders_b::Vector{Gender}
@@ -46,13 +48,25 @@ function get_pokemon_icon(img, i, player)
     ]
 end
 
-function parse_pokemon_icon(img, i, player, pokemon_icons, σ = 0.5)
-    template = get_pokemon_icon(img, i, player)
+function parse_pokemon_icon(img, i, player, pokemon_icons; σ = 0.5, preprocess=(player == 3))
+    icon = get_pokemon_icon(img, i, player)
+    uncertain = if preprocess
+        h, w = size(icon)
+        rect = icon.rect
+        rh, rw = rect.height, rect.width
+        icon = floodfill(icon, (1, 1), 1, 0.1)
+        uncertain = Gray(icon[1, w]) < 0.02
+        floodfill!(icon, (100 * h ÷ rh, 10 * w ÷ rw), 1, 0.1)
+        floodfill!(icon, (1, w), 1, 0.1)
+        uncertain
+    else
+        false
+    end
     table_search(
-        template, pokemon_icons,
-        rect = TeamPreviewIconSheetRect,
+        icon, pokemon_icons,
+        rect = PokeIconSheetRect,
         σ = σ
-    )
+    ), uncertain
 end
 
 # player == 1,2,3,4 for A,B,A-Selecting,B-Selecting
@@ -63,29 +77,34 @@ function parse_player(img, player, ctx)
         data.pokemon_icons = SpriteSheet(Data.PokemonIconSheet, gray = gray)
     end
     pokemon_icons = data.pokemon_icons
-    team = [
-        parse_pokemon_icon(
+    team = Vector{PokemonID}(undef, 6)
+    uncertain = 0
+    for i in 1:6
+        team[i], u = parse_pokemon_icon(
             img, i, player,
             pokemon_icons,
-            gray ? 0.5 : 0.0
-        ) for i in 1:6
-    ]
-    return team, [], [], [], []
+            σ = gray ? 0.5 : 0.0
+        )
+        if u
+            uncertain = i
+        end
+    end
+    return team, uncertain, [], [], [], []
 end
 
 function _parse_scene(::Type{TeamPreview}, frame::VsFrame, ctx::PokemonContext, a = 1, b = 2)
     img = image(frame)
     source = ctx.config.source
-    team_a, genders_a, levels_a, items_a, hps_a = if source.parse_player_a
+    team_a, uncertain, genders_a, levels_a, items_a, hps_a = if source.parse_player_a
         parse_player(img, a, ctx)
     else
         [], [], [], [], []
     end
-    team_b, genders_b, levels_b, _, _ = parse_player(img, b, ctx)
+    team_b, _, genders_b, levels_b, _, _ = parse_player(img, b, ctx)
 
     TeamPreview(
         frame.time,
-        team_a, team_b,
+        team_a, uncertain, team_b,
         genders_a, genders_b,
         levels_a, levels_b,
         items_a, hps_a
