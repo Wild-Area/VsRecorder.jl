@@ -27,7 +27,7 @@ function VsRecorderBase.vs_setup(
     image_size = (960, 540),
     parse_battle = true,
     parse_player_a = false,
-    match_threshold = 0.05,
+    match_threshold = 0.1,
     set_global = true,
     init_descriptors = true
 )

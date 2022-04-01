@@ -12,6 +12,7 @@ function get_current_context!(ctx::PokemonContext)::BattleContext
     end
     parsing_context.current
 end
+initialize_scene!(::PokemonContext, ::Type{<:AbstractPokemonScene}) = nothing
 
 still_available(::Nothing, ::PokemonContext) = false
 still_available(scene::AbstractPokemonScene, ::PokemonContext) = false
@@ -19,14 +20,20 @@ still_available(scene::AbstractPokemonScene, ::PokemonContext) = false
 VsRecorderBase.vs_tryparse_scene(
     T::Type{<:AbstractPokemonScene},
     frame::VsFrame,
-    ctx::PokemonContext = default_context()
+    ctx::Union{PokemonContext, Nothing} = nothing;
+    force = false
 ) = try
+    if isnothing(ctx)
+        ctx = default_context()
+    end
     if ctx.current_frame != frame
         ctx.current_frame = frame
     end
     current = get_current_context!(ctx)
-    previous = get(current.parsed_scenes, T, nothing)
-    still_available(previous, ctx) && return previous
+    if !force
+        previous = get(current.parsed_scenes, T, nothing)
+        still_available(previous, ctx) && return previous
+    end
     current.parsed_scenes[T] = _parse_scene(T, frame, ctx)
 catch e
     ctx.data.last_error = e
