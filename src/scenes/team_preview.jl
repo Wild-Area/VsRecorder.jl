@@ -100,7 +100,7 @@ function parse_pokemon_icon(img, i, player, pokemon_icons; preprocess=(player ==
     ), uncertain
 end
 
-function parse_item(img, i, player, item_icons; preprocess=(player == 3))
+function parse_item(img, i, player, item_icons; preprocess=true)
     icon = get_area(img, i, player, ITEM_ICON)
     if preprocess
         icon = floodfill(icon, (1, 1), 1, 0.1)
@@ -173,8 +173,10 @@ function parse_player(img, player, ctx)
         end
         genders[i] = parse_gender(img, i, player, gender_icons, u)
         levels[i] = parse_level(img, i, player, ctx, u)
-        if player == 3
+        if player == 1 || player == 3
             push!(items, parse_item(img, i, player, item_icons))
+        end
+        if player == 3
             push!(hps, parse_hp(img, i, ctx, u))
         end
     end
