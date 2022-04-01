@@ -22,7 +22,7 @@ function VsRecorderBase.vs_setup(
     language::GameLanguage = EN,
     double = true,
     num_skip_frames = 59,
-    use_gray_image = true,
+    use_gray_image = false,
     feature_size = (360, 640),
     image_size = (960, 540),
     parse_battle = true,

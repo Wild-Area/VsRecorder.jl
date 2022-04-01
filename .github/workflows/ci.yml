@@ -18,10 +18,18 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        with:
+          repository: Wild-Area/vs-recorder-data
+          path: ./data
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      - run: |
+          mkdir -p $HOME/.julia/artifacts
+          echo "113db057ea8fd9dd2ed6814748e832a38653cb43 = \"`pwd`/data\"" > $HOME/.julia/artifacts/Overrides.toml
+        shell: bash
       - run: julia --project=. -e "using Pkg; Pkg.develop(url=\"https://github.com/Wild-Area/VsRecorderBase.jl.git\")"
       - run: julia --project=. -e "using Pkg; Pkg.develop(url=\"https://github.com/sunoru/SimpleI18n.jl.git\")"
       - uses: julia-actions/julia-runtest@latest
