@@ -80,7 +80,7 @@ feature_image_name(::Type{TeamPreviewSelecting}, ::PokemonBattle) = "team-previe
 
 still_available(::Union{TeamPreview, TeamPreviewSelecting}, ::PokemonContext) = true
 
-function parse_pokemon_icon(img, i, player, pokemon_icons; σ = 0.5, preprocess=(player == 3))
+function parse_pokemon_icon(img, i, player, pokemon_icons; preprocess=(player == 3))
     icon = get_area(img, i, player, POKEMON_ICON)
     uncertain = if preprocess
         h, w = size(icon)
@@ -96,19 +96,17 @@ function parse_pokemon_icon(img, i, player, pokemon_icons; σ = 0.5, preprocess=
     end
     table_search(
         icon, pokemon_icons,
-        rect = PokemonIconSheetRect,
-        σ = σ
+        rect = PokemonIconSheetRect
     ), uncertain
 end
 
-function parse_item(img, i, player, item_icons; σ = 0.0, preprocess=(player == 3))
+function parse_item(img, i, player, item_icons; preprocess=(player == 3))
     icon = get_area(img, i, player, ITEM_ICON)
     if preprocess
         icon = floodfill(icon, (1, 1), 1, 0.1)
     end
     table_search(
-        icon, item_icons,
-        σ = σ
+        icon, item_icons
     )
 end
 
@@ -118,8 +116,7 @@ function parse_gender(img, i, player, gender_icons, selected=false)
         icon = floodfill(icon, (1, 1), 1, 0.1)
     end
     r = table_search(
-        icon, gender_icons,
-        σ = 0.0
+        icon, gender_icons
     )
     r === "null" ? nothing : r === "male"
 end
@@ -169,8 +166,7 @@ function parse_player(img, player, ctx)
     for i in 1:6
         team[i], u = parse_pokemon_icon(
             img, i, player,
-            pokemon_icons,
-            σ = gray ? 0.5 : 0.0
+            pokemon_icons
         )
         if u
             uncertain = i
