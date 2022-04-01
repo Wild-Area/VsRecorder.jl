@@ -30,8 +30,8 @@ jobs:
           mkdir -p $HOME/.julia/artifacts
           cd ./data
           julia -e 'write(joinpath(homedir(), ".julia/artifacts/Overrides.toml"), "113db057ea8fd9dd2ed6814748e832a38653cb43 = \"$(pwd())\"")'
-          julia --project=. -e "using Pkg; Pkg.develop(url=\"https://github.com/Wild-Area/VsRecorderBase.jl.git\")"
-          julia --project=. -e "using Pkg; Pkg.develop(url=\"https://github.com/sunoru/SimpleI18n.jl.git\")"
+          julia --project=.. -e "using Pkg; Pkg.develop(url=\"https://github.com/Wild-Area/VsRecorderBase.jl.git\")"
+          julia --project=.. -e "using Pkg; Pkg.develop(url=\"https://github.com/sunoru/SimpleI18n.jl.git\")"
         shell: bash
       - uses: julia-actions/julia-runtest@latest
       - uses: julia-actions/julia-processcoverage@v1
