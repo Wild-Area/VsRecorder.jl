@@ -142,7 +142,8 @@ function initialize_scene!(ctx::PokemonContext, ::Type{TeamPreview})
     gray = ctx.config.use_gray_image
     # Prepare sheets
     data.pokemon_icons = SpriteSheet(Data.PokemonIconSheet, gray = gray)
-    data.item_icons = SpriteSheet(Data.ItemIconSheet, gray = gray)
+    item_icons = data.item_icons = SpriteSheet(Data.ItemIconSheet, gray = gray)
+    item_icons.image .= blur(item_icons.image, 1f0)
     data.gender_icons = SpriteSheet(Data.GenderIconSheet, gray = gray)
 end
 
