@@ -8,33 +8,29 @@ function get_current_context!(ctx::PokemonContext)::BattleContext
     if isnothing(parsing_context.current)
         current = parsing_context.current = BattleContext()
         push!(parsing_context.battles, current.battle)
-        push!(parsing_context.parsed_battles, current.parsed_battle)
+        if ctx.config.source.parse_type > PARSE_NONE
+            current.parsed_battle = ParsedBattle()
+            push!(parsing_context.parsed_battles, current.parsed_battle)
+        end
     end
     parsing_context.current
 end
 initialize_scene!(::PokemonContext, ::Type{<:AbstractPokemonScene}) = nothing
 
-still_available(::Nothing, ::PokemonContext) = false
-still_available(scene::AbstractPokemonScene, ::PokemonContext) = false
-
 VsRecorderBase.vs_tryparse_scene(
     T::Type{<:AbstractPokemonScene},
     frame::VsFrame,
     ctx::Union{PokemonContext, Nothing} = nothing;
-    force = false
+    force::Bool = false
 ) = try
     if isnothing(ctx)
         ctx = default_context()
     end
-    if ctx.current_frame !== frame
+    if ctx.current_frame ≢ frame
         ctx.current_frame = frame
     end
-    current = get_current_context!(ctx)
-    if !force
-        previous = get(current.parsed_scenes, T, nothing)
-        still_available(previous, ctx) && return previous
-    end
-    current.parsed_scenes[T] = _parse_scene(T, frame, ctx)
+    ctx.data.force = force
+    _parse_scene(T, frame, ctx)
 catch e
     ctx.data.last_error = e
     rethrow(e)

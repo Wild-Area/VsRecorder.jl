@@ -63,9 +63,9 @@ end
 
 struct TeamPreview <: AbstractPokemonScene
     frame_time::Float64
-    team_a::Vector{PokemonID}
+    team_a::Vector{String}
     uncertain::Int
-    team_b::Vector{PokemonID}
+    team_b::Vector{String}
     genders_a::Vector{Gender}
     genders_b::Vector{Gender}
     levels_a::Vector{Int64}
@@ -161,31 +161,41 @@ end
 # player == 1,2,3,4 for A,B,A-Selecting,B-Selecting
 function parse_player(img, player, ctx)
     data = ctx.data
-    gray = ctx.config.use_gray_image
     if isnothing(data.pokemon_icons)
         initialize_scene!(ctx, TeamPreview)
     end
+
+    team = String[]
+    uncertain = 0
+    genders = Nullable{Bool}[]
+    levels = Int64[]
+    items = String[]
+    hps = Int64[]
+    name = ""
+    parse_type = ctx.config.source.parse_type
+    is_player_a = player == 1 || player == 3
+    if is_player_a && parse_type ≢ PARSE_BOTH_PLAYERS
+        return team, uncertain, genders, levels, items, hps, name
+    end
+
     pokemon_icons = data.pokemon_icons
     item_icons = data.item_icons
     gender_icons = data.gender_icons
 
-    team = Vector{PokemonID}(undef, 6)
-    genders = Vector{Nullable{Bool}}(undef, 6)
-    levels = Vector{Int64}(undef, 6)
-    items = Vector{String}()
-    hps = Vector{Int64}()
-    uncertain = 0
     for i in 1:6
-        team[i], u = parse_pokemon_icon(
+        poke, u = parse_pokemon_icon(
             img, i, player,
             pokemon_icons
         )
         if u
             uncertain = i
         end
-        genders[i] = parse_gender(img, i, player, gender_icons, u)
-        levels[i] = parse_level(img, i, player, ctx, u)
-        if player == 1 || player == 3
+        push!(team, poke)
+        if parse_type > PARSE_MINIMAL
+            push!(genders, parse_gender(img, i, player, gender_icons, u))
+            push!(levels, parse_level(img, i, player, ctx, u))
+        end
+        if is_player_a
             push!(items, parse_item(img, i, player, item_icons))
         end
         if player == 3
@@ -197,15 +207,19 @@ function parse_player(img, player, ctx)
 end
 
 function _parse_scene(::Type{TeamPreview}, frame::VsFrame, ctx::PokemonContext, a = 1, b = 2)
-    img = image(frame)
-    source = ctx.config.source
-    team_a, uncertain, genders_a, levels_a, items_a, hps_a, name_a = if source.parse_player_a
-        parse_player(img, a, ctx)
-    else
-        [], [], [], [], []
+    data = get_current_context!(ctx).data
+    if !ctx.data.force && !isnothing(data.team_preview)
+        parse_type = ctx.config.source.parse_type
+        if parse_type ≢ PARSE_BOTH_PLAYERS || a == 1 || data.uncertain_poke == 0
+            # Already parsed everything we need
+            return nothing
+        end
     end
+    img = image(frame)
+    team_a, uncertain, genders_a, levels_a, items_a, hps_a, name_a = parse_player(img, a, ctx)
     team_b, _, genders_b, levels_b, _, _, name_b = parse_player(img, b, ctx)
 
+    data.team_preview = true
     TeamPreview(
         frame.time,
         team_a, uncertain, team_b,
@@ -222,6 +236,49 @@ _parse_scene(::Type{TeamPreviewSelecting}, frame::VsFrame, ctx::PokemonContext) 
 function _vs_update!(ctx::PokemonContext, scene::TeamPreview)
     parsing = get_current_context!(ctx)
     battle = parsing.battle
-    # battle.
+    parsed_battle = parsing.parsed_battle
+    parse_type = ctx.config.source.parse_type
+
+    data = parsing.data
+    if parse_type ≡ PARSE_BOTH_PLAYERS
+        # TODO: set uncertain
+        if isnothing(data.uncertain_poke) && scene.uncertain > 0
+            data.uncertain_poke = scene.uncertain
+        elseif data.uncertain_poke != scene.uncertain
+            data.uncertain_poke = 0
+        end
+        if scene.name_a != ""
+            battle.player.name = scene.name_a
+        end
+        for (i, value) in enumerate(scene.team_a)
+            i == scene.uncertain && continue
+            update_team!(parsed_battle, true, i, :id, value)
+        end
+        for (i, value) in enumerate(scene.genders_a)
+            update_team!(parsed_battle, true, i, :gender, value)
+        end
+        for (i, value) in enumerate(scene.levels_a)
+            update_team!(parsed_battle, true, i, :level, value)
+        end
+        for (i, value) in enumerate(scene.items_a)
+            update_team!(parsed_battle, true, i, :item, value)
+        end
+        for (i, value) in enumerate(scene.hps_a)
+            update_team!(parsed_battle, true, i, :hp, value)
+        end
+    end
+    if scene.name_b != ""
+        battle.opponent.name = scene.name_b
+    end
+    battle.opponent_team = [PokemonID(x) for x in scene.team_b]
+    for (i, value) in enumerate(scene.team_b)
+        update_team!(parsed_battle, false, i, :id, value)
+    end
+    for (i, value) in enumerate(scene.genders_b)
+        update_team!(parsed_battle, false, i, :gender, value)
+    end
+    for (i, value) in enumerate(scene.levels_b)
+        update_team!(parsed_battle, false, i, :level, value)
+    end
     ctx
 end

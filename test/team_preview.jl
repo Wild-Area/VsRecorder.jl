@@ -30,7 +30,7 @@ end
         "露 露", "Zoe"
     )
     frame1 = VsFrame(image = VsRecorder.load_data("scenes", "zhs", "team-preview.png"))
-    parsed1 = vs_tryparse_scene(TeamPreview, frame1, ctx, force=true)
+    parsed1 = vs_tryparse_scene(TeamPreview, frame1, ctx)
     test_result(parsed1, expected1)
 
     expected2 = TeamPreview(
@@ -48,7 +48,7 @@ end
         "", "あか つき"
     )
     frame2 = VsFrame(image = VsRecorder.load_data("scenes", "zhs", "team-preview-selecting.png"))
-    parsed2 = vs_tryparse_scene(TeamPreviewSelecting, frame2, ctx, force=true)
+    parsed2 = vs_tryparse_scene(TeamPreviewSelecting, frame2, ctx)
     @test typeof(parsed2) ≡ TeamPreview
     test_result(parsed2, expected2)
 end

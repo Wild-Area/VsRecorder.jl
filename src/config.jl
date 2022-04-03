@@ -1,4 +1,19 @@
 """
+    ParseType
+
+- PARSE_NONE: Only collect information
+- PARSE_MINIMAL: Parse only useful information.
+- PARSE_OPPONENT: Parse all information of the opponent
+- PARSE_BOTH_PLAYERS: Parse all information for both players.
+"""
+@enum ParseType begin
+    PARSE_NONE = 0
+    PARSE_MINIMAL = 1
+    PARSE_OPPONENT = 2
+    PARSE_BOTH_PLAYERS = 3
+end
+
+"""
     PokemonBattle
 
 Only works for double ranked battles right now.
@@ -8,8 +23,7 @@ Base.@kwdef struct PokemonBattle <: AbstractVsSource
     double::Bool
     # (height, width)
     image_size::Tuple{Int, Int}
-    parse_battle::Bool
-    parse_player_a::Bool
+    parse_type::ParseType
 end
 
 const GlobalVsConfig = Ref{Union{
@@ -25,8 +39,7 @@ function VsRecorderBase.vs_setup(
     use_gray_image = false,
     feature_size = (360, 640),
     image_size = (960, 540),
-    parse_battle = true,
-    parse_player_a = false,
+    parse_type::ParseType = PARSE_MINIMAL,
     match_threshold = 0.1,
     set_global = true,
     init_descriptors = true
@@ -44,8 +57,7 @@ source = PokemonBattle(
     language = language,
     double = double,
     image_size = image_size,
-    parse_battle = parse_battle,
-    parse_player_a = parse_player_a
+    parse_type = parse_type
 )
 
 config = VsConfig(
@@ -65,7 +77,8 @@ config
 end
 
 default_config() = isnothing(GlobalVsConfig[]) ? vs_setup(
-    PokemonBattle, parse_player_a = true, set_global = false,
+    PokemonBattle, parse_type = PARSE_BOTH_PLAYERS,
+    set_global = false,
     init_descriptors = false
 ) : GlobalVsConfig[]
 

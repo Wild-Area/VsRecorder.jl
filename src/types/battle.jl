@@ -1,38 +1,38 @@
 module BattleEnums
 
 @enum BattleFormat begin
-    Single
-    Double
+    SINGLE
+    DOUBLE
     # TODO: Including different rules?
 end
 
 @enum BattleEvent begin
-    Beginning
+    BEGINNING
 
-    Switch              # [true/false for in/out, pokemon]
-    Ability             # [pokemon, ability]
-    AbilityEffect       # [effect]
-    StatsChange         # [stat_type, value]
-    UseMove             # [pokemon, move]
-    CheckEffective      # [0/1/2/3 for no/not very/neutral/very effective]
-    HPChange            # [pokemon, old, new] Note that old/new can be percentages (in float numbers).
-    Miss                # [pokemon]
-    CriticalHit         # no arg
-    MoveEffect          # [effect]
-    Faint               # [pokemon]
-    EnvironmentEffect   # [effect]
-    Dynamax             # [pokemon]
-    Forfeit             # [true/false for player/opponent]
+    SWITCH              # [true/false for in/out, pokemon]
+    ABILITY             # [pokemon, ability]
+    ABILITY_EFFECT      # [effect]
+    STATS_CHANGE        # [stat_type, value]
+    USE_MOVE            # [pokemon, move]
+    CHECK_EFFECTIVE     # [0/1/2/3 for no/not very/neutral/very effective]
+    HP_CHANGE           # [pokemon, old, new] Note that old/new can be percentages (in float numbers).
+    MISS                # [pokemon]
+    CRITICAL_HIT        # no arg
+    MOVE_EFFECT         # [effect]
+    FAINT               # [pokemon]
+    ENVIRONMENT_EFFECT  # [effect]
+    DYNAMAX             # [pokemon]
+    FORFEIT             # [true/false for player/opponent]
 
-    Unknown             # [raw_text]
+    UNKNOWN             # [raw_text]
 
-    Ending              # [0/1/2 for win/tie/loss]
+    ENDING              # [0/1/2 for win/tie/loss]
 end
 
 @enum BattleResult begin
-    Win
-    Lose
-    Tie
+    WIN
+    LOSE
+    TIE
 end
 
 end
@@ -40,13 +40,14 @@ end
 @missable mutable struct Event
     id::Int64
     turn::Int64
-    type::BattleEnums.BattleEvent = BattleEnums.BattleEvent.Unknown
+    type::BattleEnums.BattleEvent = BattleEnums.UNKNOWN
     arg::Any
 end
 
 @missable mutable struct Battle
     format::BattleEnums.BattleFormat
-    opponent::Player
+    player::Player = Player()
+    opponent::Player = Player()
     opponent_team::Vector{PokemonID}
     events::Vector{Event} = Event[]
 end
@@ -54,6 +55,22 @@ end
 # Parsed Data from events
 @missable mutable struct ParsedBattle
     result::BattleEnums.BattleResult
-    team_a::Team = Pokemon[]
-    team_b::Team = Pokemon[]
+    team_a::Team
+    team_b::Team
+end
+
+update_team!(::Missing, _...) = missing
+function update_team!(battle::ParsedBattle, is_team_a::Bool, args...)
+    if is_team_a
+        if ismissing(battle.team_a)
+            battle.team_a = Team()
+        end
+        update_team!(battle.team_a, args...)
+    else
+        if ismissing(battle.team_b)
+            battle.team_b = Team()
+        end
+        update_team!(battle.team_b, args...)
+    end
+    battle
 end
