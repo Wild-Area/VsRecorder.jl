@@ -33,7 +33,12 @@ const OCR_LANGUAGES = Dict(
 
 function default_language(locale = SimpleI18n.get_system_language())
     lang = lowercase(locale)
-    lang, region = split(lang, '_', limit = 2)
+    t = split(lang, '_', limit = 2)
+    lang, region = if length(t) < 2
+        t[1], ""
+    else
+        t
+    end
     if lang == "zh"
         if region ∈ ("hk", "tw")
             ZHT
