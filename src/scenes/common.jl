@@ -26,7 +26,7 @@ VsRecorderBase.vs_tryparse_scene(
     if isnothing(ctx)
         ctx = default_context()
     end
-    if ctx.current_frame != frame
+    if ctx.current_frame !== frame
         ctx.current_frame = frame
     end
     current = get_current_context!(ctx)
@@ -40,3 +40,5 @@ catch e
     rethrow(e)
     nothing
 end
+
+VsRecorderBase.vs_update!(ctx::PokemonContext, scene::AbstractPokemonScene) = _vs_update!(ctx, scene)

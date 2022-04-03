@@ -5,7 +5,7 @@ using VsRecorder.Scenes: feature_image_name, initialize_scene!
 function VsRecorderBase.vs_init!(ctx::PokemonContext{DefaultStrategy})
     invoke(vs_init!, Tuple{VsContext{DefaultStrategy}}, ctx)
     data = ctx.data
-    # TODO
+    data.name_ocr_instance = create_ocr_instance(all_ocr_languages())
     data.context = ParsingContext()
     for scene_type in Scenes.AvailableScenes
         initialize_scene!(ctx, scene_type)

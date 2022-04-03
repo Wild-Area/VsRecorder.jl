@@ -19,7 +19,7 @@ const GlobalVsConfig = Ref{Union{
 
 function VsRecorderBase.vs_setup(
     ::Type{PokemonBattle};
-    language::GameLanguage = EN,
+    language::GameLanguage = default_language(),
     double = true,
     num_skip_frames = 59,
     use_gray_image = false,

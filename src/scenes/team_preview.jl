@@ -4,6 +4,7 @@
     GENDER_ICON
     LEVEL_TEXT
     HP_TEXT
+    PLAYER_NAME
 end
 
 const PokemonIconSheetRect = Rect((13, 1), (100, 132))
@@ -45,8 +46,10 @@ elseif area_type ≡ LEVEL_TEXT
     else
         (73, 396), (56, 168)
     end
-else # HP. Only available for large player box
+elseif area_type ≡ HP_TEXT  # Only available for large player box
     (78, 134), (40, 200)
+else  # NAME
+    (1, 7), (56, 408)
 end
 
 function get_area(img, i, player, area_type::TeamPreviewArea)
@@ -69,6 +72,8 @@ struct TeamPreview <: AbstractPokemonScene
     levels_b::Vector{Int64}
     items_a::Vector{String}
     hps_a::Vector{Int}
+    name_a::String
+    name_b::String
 end
 
 struct TeamPreviewSelecting <: AbstractPokemonScene
@@ -124,11 +129,9 @@ end
 function _parse_number(img, i, player, ctx, selected, area_type)
     text_area = get_area(img, i, player, area_type)
     if selected
-        text_area = complement(text_area)
+        text_area = complement.(text_area)
     end
-    text = parse_text(text_area, ctx)
-    m = match(r"\d+", text)
-    isnothing(m) ? 0 : parse(Int, m.match)
+    ocr(Int, text_area, ctx.ocr_instance_eng)
 end
 
 parse_level(img, i, player, ctx, selected=false) =
@@ -136,6 +139,14 @@ parse_level(img, i, player, ctx, selected=false) =
 
 parse_hp(img, i, ctx, selected=false) =
     _parse_number(img, i, 3, ctx, selected, HP_TEXT)
+
+function parse_name(img, player, ctx; threshold = 0.35f0)
+    player == 3 && return ""
+    text_area = get_area(img, 1, player, PLAYER_NAME)
+    img = complement.(Gray.(text_area))
+    img[img .> threshold] .= 1
+    ocr(img, ctx.data.name_ocr_instance)
+end
 
 function initialize_scene!(ctx::PokemonContext, ::Type{TeamPreview})
     data = ctx.data
@@ -181,28 +192,36 @@ function parse_player(img, player, ctx)
             push!(hps, parse_hp(img, i, ctx, u))
         end
     end
-    return team, uncertain, genders, levels, items, hps
+    name = parse_name(img, player, ctx)
+    return team, uncertain, genders, levels, items, hps, name
 end
 
 function _parse_scene(::Type{TeamPreview}, frame::VsFrame, ctx::PokemonContext, a = 1, b = 2)
     img = image(frame)
     source = ctx.config.source
-    team_a, uncertain, genders_a, levels_a, items_a, hps_a = if source.parse_player_a
+    team_a, uncertain, genders_a, levels_a, items_a, hps_a, name_a = if source.parse_player_a
         parse_player(img, a, ctx)
     else
         [], [], [], [], []
     end
-    team_b, _, genders_b, levels_b, _, _ = parse_player(img, b, ctx)
+    team_b, _, genders_b, levels_b, _, _, name_b = parse_player(img, b, ctx)
 
     TeamPreview(
         frame.time,
         team_a, uncertain, team_b,
         genders_a, genders_b,
         levels_a, levels_b,
-        items_a, hps_a
+        items_a, hps_a,
+        name_a, name_b
     )
 end
 
 _parse_scene(::Type{TeamPreviewSelecting}, frame::VsFrame, ctx::PokemonContext) =
     _parse_scene(TeamPreview, frame, ctx, 3, 4)
 
+function _vs_update!(ctx::PokemonContext, scene::TeamPreview)
+    parsing = get_current_context!(ctx)
+    battle = parsing.battle
+    # battle.
+    ctx
+end
