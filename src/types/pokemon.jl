@@ -1,12 +1,5 @@
 # Using mutable to allow missing values
 
-# All values will be English names so that the `yaml` files will be human-readable.
-@type_wrapper PokemonID String
-@type_wrapper ItemID String
-@type_wrapper MoveID String
-@type_wrapper AbilityID String
-const Gender = Union{Nothing, Bool}
-
 @missable mutable struct Stats
     hp::Int
     attack::Int

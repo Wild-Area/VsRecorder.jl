@@ -4,8 +4,10 @@ using Artifacts, Dates
 
 using SimpleI18n
 using VsRecorderBase
+using VsRecorderBase: OrderedDict
 
 include("i18n.jl")
+include("types/dex.jl")
 include("data.jl")
 include("io.jl")
 
