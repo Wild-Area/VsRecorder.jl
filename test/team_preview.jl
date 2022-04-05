@@ -18,9 +18,9 @@ end
 
     expected1 = TeamPreview(
         0.0,
-        ["corviknight", "dragapult", "arcanine", "tyranitar-old", "gastrodon-east-sea", "grimmsnarl"],
+        ["corviknight", "dragapult", "arcanine", "tyranitar-old", "gastrodon-east", "grimmsnarl"],
         0,
-        ["charizard", "sableye", "rhyperior", "torkoal", "gastrodon-east-sea", "heliolisk"],
+        ["charizard", "sableye", "rhyperior", "torkoal", "gastrodon-east", "heliolisk"],
         [false, false, true, true, false, true],
         [true, true, true, false, false, true],
         [50, 50, 50, 50, 50, 50],
@@ -36,9 +36,9 @@ end
     expected2 = TeamPreview(
         0.0,
         # The first pokemon is expected to be wrong.
-        ["wishiwashi", "kingdra", "shedinja", "zacian", "indeedee-female", "landorus-therian-form"],
+        ["wishiwashi", "kingdra", "shedinja", "zacian", "indeedee-f", "landorus-therian"],
         1,
-        ["mamoswine", "indeedee-female", "zamazenta", "ho-oh", "landorus-therian-form", "gastrodon-east-sea"],
+        ["mamoswine", "indeedee-f", "zamazenta", "ho-oh", "landorus-therian", "gastrodon-east"],
         [nothing, false, nothing, nothing, false, true],
         [true, false, nothing, nothing, true, true],
         [50, 50, 50, 50, 50, 50],

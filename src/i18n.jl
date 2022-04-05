@@ -69,7 +69,7 @@ function download_all_ocr_languages()
     for lang ∈ values(OCR_LANGUAGES)
         download_ocr_language(lang) || return false
         if lang ∈ ("chi_sim", "chi_tra", "jpn")
-            download_ocr_language(lang) || return false
+            download_ocr_language(lang * "_vert") || return false
         end
     end
     true
