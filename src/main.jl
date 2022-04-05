@@ -1,16 +1,12 @@
 import VsRecorderBase: vs_tryparse_scene, vs_result
 import VsRecorderBase.DefaultStrategyModule: feature_image_and_masks
-using VsRecorder.Scenes: feature_image_name, initialize_scene!
+using VsRecorder.Scenes: feature_image_name
 
 function VsRecorderBase.vs_init!(ctx::PokemonContext{DefaultStrategy})
     invoke(vs_init!, Tuple{VsContext{DefaultStrategy}}, ctx)
     data = ctx.data
-    data.poke_dex = Data.initialize_dex()
     data.name_ocr_instance = create_ocr_instance(all_ocr_languages())
     data.context = ParsingContext()
-    for scene_type in Scenes.AvailableScenes
-        initialize_scene!(ctx, scene_type)
-    end
 end
 
 function feature_image_and_masks(source::PokemonBattle, ctx::VsContext)

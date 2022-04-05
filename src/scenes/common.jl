@@ -15,7 +15,6 @@ function get_current_context!(ctx::PokemonContext)::BattleContext
     end
     parsing_context.current
 end
-initialize_scene!(::PokemonContext, ::Type{<:AbstractPokemonScene}) = nothing
 
 VsRecorderBase.vs_tryparse_scene(
     T::Type{<:AbstractPokemonScene},

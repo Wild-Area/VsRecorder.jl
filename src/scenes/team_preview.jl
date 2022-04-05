@@ -85,7 +85,8 @@ feature_image_name(::Type{TeamPreviewSelecting}, ::PokemonBattle) = "team-previe
 
 still_available(::Union{TeamPreview, TeamPreviewSelecting}, ::PokemonContext) = true
 
-function parse_pokemon_icon(img, i, player, pokemon_icons; preprocess=(player == 3))
+function parse_pokemon_icon(img, i, player; preprocess=(player == 3))
+    icons = pokemon_icons()
     icon = get_area(img, i, player, POKEMON_ICON)
     uncertain = if preprocess
         h, w = size(icon)
@@ -100,28 +101,30 @@ function parse_pokemon_icon(img, i, player, pokemon_icons; preprocess=(player ==
         false
     end
     table_search(
-        icon, pokemon_icons,
+        icon, icons,
         rect = PokemonIconSheetRect
     ), uncertain
 end
 
-function parse_item(img, i, player, item_icons; preprocess=true)
+function parse_item(img, i, player; preprocess=true)
+    icons = item_icons()
     icon = get_area(img, i, player, ITEM_ICON)
     if preprocess
         icon = floodfill(icon, (1, 1), 1, 0.1)
     end
     table_search(
-        icon, item_icons
+        icon, icons
     )
 end
 
-function parse_gender(img, i, player, gender_icons, selected=false)
+function parse_gender(img, i, player, selected=false)
+    icons = gender_icons()
     icon = get_area(img, i, player, GENDER_ICON)
     if selected
         icon = floodfill(icon, (1, 1), 1, 0.1)
     end
     r = table_search(
-        icon, gender_icons
+        icon, icons
     )
     r === "null" ? nothing : r === "male"
 end
@@ -148,22 +151,10 @@ function parse_name(img, player, ctx; threshold = 0.35f0)
     ocr(img, ctx.data.name_ocr_instance)
 end
 
-function initialize_scene!(ctx::PokemonContext, ::Type{TeamPreview})
-    data = ctx.data
-    gray = ctx.config.use_gray_image
-    # Prepare sheets
-    data.pokemon_icons = SpriteSheet(Data.PokemonIconSheet, gray = gray)
-    item_icons = data.item_icons = SpriteSheet(Data.ItemIconSheet, gray = gray)
-    item_icons.image .= blur(item_icons.image, 1f0)
-    data.gender_icons = SpriteSheet(Data.GenderIconSheet, gray = gray)
-end
-
 # player == 1,2,3,4 for A,B,A-Selecting,B-Selecting
 function parse_player(img, player, ctx)
-    data = ctx.data
-    if isnothing(data.pokemon_icons)
-        initialize_scene!(ctx, TeamPreview)
-    end
+    config = ctx.config
+    gray = config.use_gray_image
 
     team = String[]
     uncertain = 0
@@ -172,31 +163,24 @@ function parse_player(img, player, ctx)
     items = String[]
     hps = Int64[]
     name = ""
-    parse_type = ctx.config.source.parse_type
+    parse_type = config.source.parse_type
     is_player_a = player == 1 || player == 3
     if is_player_a && parse_type ≢ PARSE_BOTH_PLAYERS
         return team, uncertain, genders, levels, items, hps, name
     end
 
-    pokemon_icons = data.pokemon_icons
-    item_icons = data.item_icons
-    gender_icons = data.gender_icons
-
     for i in 1:6
-        poke, u = parse_pokemon_icon(
-            img, i, player,
-            pokemon_icons
-        )
+        poke, u = parse_pokemon_icon(img, i, player)
         if u
             uncertain = i
         end
         push!(team, poke)
         if parse_type > PARSE_MINIMAL
-            push!(genders, parse_gender(img, i, player, gender_icons, u))
+            push!(genders, parse_gender(img, i, player, u))
             push!(levels, parse_level(img, i, player, ctx, u))
         end
         if is_player_a
-            push!(items, parse_item(img, i, player, item_icons))
+            push!(items, parse_item(img, i, player))
         end
         if player == 3
             push!(hps, parse_hp(img, i, ctx, u))

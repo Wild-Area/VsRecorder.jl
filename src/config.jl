@@ -45,6 +45,10 @@ function VsRecorderBase.vs_setup(
     init_descriptors = true
 )
 
+if use_gray_image
+    @warn "Using gray image is not recommended for its low accuracy."
+end
+
 set_language!(GlobalI18nContext[], lowercase(string(language)), String[])
 ocr_language = OCR_LANGUAGES[language]
 strategy = DefaultStrategy(

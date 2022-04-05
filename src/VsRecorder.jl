@@ -7,15 +7,13 @@ using VsRecorderBase
 using VsRecorderBase: OrderedDict
 
 include("i18n.jl")
-include("types/dex.jl")
-include("data.jl")
+include("data/Data.jl")
+using .Data
 include("io.jl")
 
 export PokemonBattle
 include("config.jl")
 include("types/base.jl")
-include("types/player.jl")
-include("types/pokemon.jl")
 include("types/battle.jl")
 include("types/context.jl")
 include("types/result.jl")

@@ -6,26 +6,26 @@
 @type_wrapper Gender Union{Nothing, Bool}
 
 @enum PokemonType begin
-    Dark
-    Rock
-    Electric
-    Bug
-    Steel
-    Normal
-    Water
-    Ground
-    Poison
-    Ghost
-    Fairy
-    Flying
-    Psychic
-    Grass
-    Ice
-    Fighting
-    Fire
-    Dragon
+    DARK
+    ROCK
+    ELECTRIC
+    BUG
+    STEEL
+    NORMAL
+    WATER
+    GROUND
+    POISON
+    GHOST
+    FAIRY
+    FLYING
+    PSYCHIC
+    GRASS
+    ICE
+    FIGHTING
+    FIRE
+    DRAGON
 
-    Bird
+    BIRD
 end
 
 Base.@kwdef struct DexStats
@@ -54,6 +54,15 @@ Base.@kwdef struct DexPokemon
     other_data::Dict{String, Any} = Dict()
 end
 
-Base.@kwdef struct Dex
-    poke_dex::OrderedDict{PokemonID, DexPokemon} = OrderedDict()
+
+const PokeDexFile = joinpath(artifact"data", "dex", "pokedex.yaml")
+const PokeDex = Ref{Nullable{OrderedDict{PokemonID, DexPokemon}}}(nothing)
+
+function poke_dex(force = false)
+    if !force && !isnothing(PokeDex[])
+        return PokeDex[]
+    end
+    PokeDex[] = open(PokeDexFile) do fi
+        deserialize(fi, OrderedDict{PokemonID, DexPokemon}, other_key = :other_data)
+    end
 end
