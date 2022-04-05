@@ -7,6 +7,8 @@ using VsRecorderBase: OrderedDict
 import SimpleI18n
 import ..VsRecorder: get_i18n
 
+include("utils.jl")
+
 export PokemonID, ItemID, MoveID, AbilityID, Gender, PokemonType
 export poke_dex, move_dex
 include("dex.jl")

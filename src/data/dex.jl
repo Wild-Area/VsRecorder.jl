@@ -111,33 +111,24 @@ end
 
 const PokeDexFile = joinpath(artifact"data", "dex", "pokedex.yaml")
 const MoveDexFile = joinpath(artifact"data", "dex", "movedex.yaml")
-const PokeDex = Ref{Nullable{OrderedDict{PokemonID, DexPokemon}}}(nothing)
-const MoveDex = Ref{Nullable{OrderedDict{MoveID, DexMove}}}(nothing)
 
-function poke_dex(force = false)
-    if !force && !isnothing(PokeDex[])
-        return PokeDex[]
-    end
-    PokeDex[] = open(PokeDexFile) do fi
-        deserialize(
-            fi,
-            OrderedDict{PokemonID, DexPokemon},
-            other_key = :other_data,
-            dicttype = OrderedDict
-        )
-    end
+macro _dex_func(func_name, dex_name, id_type, dex_type)
+    file_name = Symbol(dex_name, :File)
+    T = :(OrderedDict{$id_type, $dex_type})
+    quote
+        const $dex_name = Ref{Nullable{$T}}(nothing)
+        function $func_name(; force = false)
+            @_load_data $dex_name force open($file_name) do fi
+                deserialize(
+                    fi,
+                    $T,
+                    other_key = :other_data,
+                    dicttype = OrderedDict
+                )
+            end
+        end
+    end |> esc
 end
 
-function move_dex(force = false)
-    if !force && !isnothing(MoveDex[])
-        return MoveDex[]
-    end
-    MoveDex[] = open(MoveDexFile) do fi
-        deserialize(
-            fi,
-            OrderedDict{MoveID, DexMove},
-            other_key = :other_data,
-            dicttype = OrderedDict
-        )
-    end
-end
+@_dex_func poke_dex PokeDex PokemonID DexPokemon
+@_dex_func move_dex MoveDex MoveID DexMove
