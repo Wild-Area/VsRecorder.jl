@@ -5,10 +5,10 @@
 @type_wrapper AbilityID String
 @type_wrapper Gender Union{Nothing, Bool}
 
-get_i18n(id::PokemonID, lang = nothing) = get_i18n("pokemon", id, lang = lang)
-get_i18n(id::ItemID, lang = nothing) = get_i18n("item", id, lang = lang)
-get_i18n(id::MoveID, lang = nothing) = get_i18n("move", id, lang = lang)
-get_i18n(id::AbilityID, lang = nothing) = get_i18n("ability", id, lang = lang)
+SimpleI18n.i18n(id::PokemonID; language = nothing) = get_i18n("pokemon", id, lang = language)
+SimpleI18n.i18n(id::ItemID; language = nothing) = get_i18n("item", id, lang = language)
+SimpleI18n.i18n(id::MoveID; language = nothing) = get_i18n("move", id, lang = language)
+SimpleI18n.i18n(id::AbilityID; language = nothing) = get_i18n("ability", id, lang = language)
 
 @enum PokemonType begin
     DARK

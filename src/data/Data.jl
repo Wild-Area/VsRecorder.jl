@@ -4,10 +4,11 @@ using Artifacts
 using VsRecorderBase
 using VsRecorderBase: OrderedDict
 
+import SimpleI18n
 import ..VsRecorder: get_i18n
 
 export PokemonID, ItemID, MoveID, AbilityID, Gender, PokemonType
-export poke_dex
+export poke_dex, move_dex
 include("dex.jl")
 
 export pokemon_icons, item_icons, gender_icons

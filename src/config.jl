@@ -27,8 +27,7 @@ Base.@kwdef struct PokemonBattle <: AbstractVsSource
     parse_type::ParseType
 end
 
-const GlobalVsConfig = Ref{Union{
-    Nothing,
+const GlobalVsConfig = Ref{Nullable{
     VsConfig{DefaultStrategy, PokemonBattle}
 }}(nothing)
 

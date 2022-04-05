@@ -6,8 +6,9 @@ using SimpleI18n
 using VsRecorderBase
 using VsRecorderBase: OrderedDict
 
-export get_i18n
 include("i18n.jl")
+export PokemonID, ItemID, MoveID, AbilityID, Gender,
+    poke_dex
 include("data/Data.jl")
 using .Data
 include("io.jl")
