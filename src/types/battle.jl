@@ -36,7 +36,7 @@ get_name(id::PokemonID) = i18n(GlobalI18nContext[], "pokemon.$(id)")
 function update_team!(team::Team, i, field, value)
     pokes = team.pokemons
     if length(pokes) ≡ 0
-        for _ in 1:6
+        for _ ∈ 1:6
             push!(pokes, Pokemon())
         end
     end

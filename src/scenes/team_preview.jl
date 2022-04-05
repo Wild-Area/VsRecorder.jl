@@ -126,7 +126,7 @@ function parse_gender(img, i, player, selected=false)
     r = table_search(
         icon, icons
     )
-    r === "null" ? nothing : r === "male"
+    Gender(r === "null" ? nothing : r === "male")
 end
 
 function _parse_number(img, i, player, ctx, selected, area_type)
@@ -154,40 +154,50 @@ end
 # player == 1,2,3,4 for A,B,A-Selecting,B-Selecting
 function parse_player(img, player, ctx)
     config = ctx.config
-    gray = config.use_gray_image
 
-    team = String[]
-    uncertain = 0
-    genders = Nullable{Bool}[]
-    levels = Int64[]
-    items = String[]
-    hps = Int64[]
-    name = ""
     parse_type = config.source.parse_type
     is_player_a = player == 1 || player == 3
     if is_player_a && parse_type ≢ PARSE_BOTH_PLAYERS
-        return team, uncertain, genders, levels, items, hps, name
+        return String[], 0, Gender[], Int64[], String[], Int64[], ""
     end
 
-    for i in 1:6
+    team = Vector{String}(undef, 6)
+    uncertain = Threads.Atomic{Int64}(0)
+    genders = parse_type > PARSE_MINIMAL ? Vector{Gender}(undef, 6) : Gender[]
+    items = is_player_a ? Vector{String}(undef, 6) : String[]
+    name = ""
+
+    Threads.@threads for i ∈ 1:6
         poke, u = parse_pokemon_icon(img, i, player)
         if u
-            uncertain = i
+            uncertain[] = i
         end
-        push!(team, poke)
+        team[i] = poke
         if parse_type > PARSE_MINIMAL
-            push!(genders, parse_gender(img, i, player, u))
-            push!(levels, parse_level(img, i, player, ctx, u))
+            genders[i] = parse_gender(img, i, player, u)
         end
         if is_player_a
-            push!(items, parse_item(img, i, player))
-        end
-        if player == 3
-            push!(hps, parse_hp(img, i, ctx, u))
+            items[i] = parse_item(img, i, player)
         end
     end
+    levels = if parse_type > PARSE_MINIMAL
+        Int64[
+            parse_level(img, i, player, ctx, uncertain[] ≡ i)
+            for i ∈ 1:6
+        ]
+    else
+        Int64[]
+    end
+    hps = if player == 3
+        Int64[
+            parse_hp(img, i, ctx, uncertain[] ≡ i)
+            for i ∈ 1:6
+        ]
+    else
+        Int64[]
+    end
     name = parse_name(img, player, ctx)
-    return team, uncertain, genders, levels, items, hps, name
+    return team, uncertain[], genders, levels, items, hps, name
 end
 
 function _parse_scene(::Type{TeamPreview}, frame::VsFrame, ctx::PokemonContext, a = 1, b = 2)
@@ -254,7 +264,7 @@ function _vs_update!(ctx::PokemonContext, scene::TeamPreview)
     if scene.name_b != ""
         battle.opponent.name = scene.name_b
     end
-    battle.opponent_team = [PokemonID(x) for x in scene.team_b]
+    battle.opponent_team = [PokemonID(x) for x ∈ scene.team_b]
     for (i, value) in enumerate(scene.team_b)
         update_team!(parsed_battle, false, i, :id, value)
     end

@@ -66,11 +66,10 @@ end
 all_ocr_languages() = "chi_sim+chi_tra+jpn+kor+fra+deu+spa+ita+eng"
 
 function download_all_ocr_languages()
-    dl = VsRecorderBase.Tesseract.download_languages
-    for lang in values(OCR_LANGUAGES)
-        dl(lang) || return false
+    for lang ∈ values(OCR_LANGUAGES)
+        download_ocr_language(lang) || return false
         if lang ∈ ("chi_sim", "chi_tra", "jpn")
-            dl("$(lang)_vert") || return false
+            download_ocr_language(lang) || return false
         end
     end
     true

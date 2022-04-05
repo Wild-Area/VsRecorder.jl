@@ -2,12 +2,12 @@ using VsRecorder.Scenes: TeamPreview, TeamPreviewSelecting
 
 
 function test_result(parsed::TeamPreview, expected::TeamPreview)
-    for field in fieldnames(TeamPreview)
+    for field ∈ fieldnames(TeamPreview)
         a = getfield(parsed, field)
         b = getfield(expected, field)
         if field ≡ :team_a
-            a = [a[i] for i in 1:6 if i != expected.uncertain]
-            b = [b[i] for i in 1:6 if i != expected.uncertain]
+            a = [a[i] for i ∈ 1:6 if i != expected.uncertain]
+            b = [b[i] for i ∈ 1:6 if i != expected.uncertain]
         end
         @test a == b
     end
