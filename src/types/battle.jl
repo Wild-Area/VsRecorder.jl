@@ -31,8 +31,6 @@ end
     pokemons::Vector{Pokemon} = Pokemon[]
 end
 
-get_name(id::PokemonID) = i18n(GlobalI18nContext[], "pokemon.$(id)")
-
 function update_team!(team::Team, i, field, value)
     pokes = team.pokemons
     if length(pokes) ≡ 0

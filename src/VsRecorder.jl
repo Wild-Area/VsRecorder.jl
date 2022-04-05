@@ -6,6 +6,7 @@ using SimpleI18n
 using VsRecorderBase
 using VsRecorderBase: OrderedDict
 
+export get_i18n
 include("i18n.jl")
 include("data/Data.jl")
 using .Data

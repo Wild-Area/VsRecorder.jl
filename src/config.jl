@@ -12,6 +12,7 @@
     PARSE_OPPONENT = 2
     PARSE_BOTH_PLAYERS = 3
 end
+VsRecorderBase.enum_prefix(::Type{ParseType}) = "PARSE_"
 
 """
     PokemonBattle
