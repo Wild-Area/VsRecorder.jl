@@ -7,6 +7,8 @@ function VsRecorderBase.vs_init!(ctx::PokemonContext{DefaultStrategy})
     data = ctx.data
     data.name_ocr_instance = create_ocr_instance(all_ocr_languages())
     data.context = ParsingContext()
+    Data.initialize_icons()
+    ctx
 end
 
 function feature_image_and_masks(source::PokemonBattle, ctx::VsContext)

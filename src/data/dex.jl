@@ -1,15 +1,3 @@
-# All values will be English names so that the `yaml` files will be human-readable.
-@type_wrapper PokemonID String
-@type_wrapper ItemID String
-@type_wrapper MoveID String
-@type_wrapper AbilityID String
-@type_wrapper Gender Union{Nothing, Bool}
-
-SimpleI18n.i18n(id::PokemonID; language = nothing) = get_i18n("pokemon", id, lang = language)
-SimpleI18n.i18n(id::ItemID; language = nothing) = get_i18n("item", id, lang = language)
-SimpleI18n.i18n(id::MoveID; language = nothing) = get_i18n("move", id, lang = language)
-SimpleI18n.i18n(id::AbilityID; language = nothing) = get_i18n("ability", id, lang = language)
-
 @enum PokemonType begin
     DARK
     ROCK
@@ -111,6 +99,9 @@ end
 
 const PokeDexFile = joinpath(artifact"data", "dex", "pokedex.yaml")
 const MoveDexFile = joinpath(artifact"data", "dex", "movedex.yaml")
+# Use English names for the ability/item dexes. (for now?)
+const AbilityDexFile = joinpath(artifact"data", "locales", "en", "ability.yaml")
+const ItemDexFile = joinpath(artifact"data", "locales", "en", "item.yaml")
 
 macro _dex_func(func_name, dex_name, id_type, dex_type)
     file_name = Symbol(dex_name, :File)
@@ -130,5 +121,37 @@ macro _dex_func(func_name, dex_name, id_type, dex_type)
     end |> esc
 end
 
-@_dex_func poke_dex PokeDex PokemonID DexPokemon
+@_dex_func ability_dex AbilityDex AbilityID String
+@_dex_func item_dex ItemDex ItemID String
 @_dex_func move_dex MoveDex MoveID DexMove
+@_dex_func poke_dex PokeDex PokemonID DexPokemon
+
+function search_dex(dex::AbstractDict, name)
+    for (id, value) in dex
+        if value.name == name
+            return id
+        end
+    end
+    name
+end
+
+function search_dex(dex::AbstractDict{T, String}, name) where T
+    for (id, value) in dex
+        if value == name
+            return id
+        end
+    end
+    name
+end
+
+VsRecorderBase._parse(
+    dict::OrderedDict, ::Type{Vector{AbilityID}};
+    _...
+) = AbilityID[search_dex(ability_dex(), x) for x in values(dict)]
+
+function initialize_dex()
+    ability_dex()
+    item_dex()
+    move_dex()
+    poke_dex()
+end

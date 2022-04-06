@@ -167,7 +167,7 @@ function parse_player(img, player, ctx)
     items = is_player_a ? Vector{String}(undef, 6) : String[]
     name = ""
 
-    Threads.@threads for i ∈ 1:6
+    Threads.@threads for i in 1:6
         poke, u = parse_pokemon_icon(img, i, player)
         if u
             uncertain[] = i
@@ -183,7 +183,7 @@ function parse_player(img, player, ctx)
     levels = if parse_type > PARSE_MINIMAL
         Int64[
             parse_level(img, i, player, ctx, uncertain[] ≡ i)
-            for i ∈ 1:6
+            for i in 1:6
         ]
     else
         Int64[]
@@ -191,7 +191,7 @@ function parse_player(img, player, ctx)
     hps = if player == 3
         Int64[
             parse_hp(img, i, ctx, uncertain[] ≡ i)
-            for i ∈ 1:6
+            for i in 1:6
         ]
     else
         Int64[]
@@ -264,7 +264,7 @@ function _vs_update!(ctx::PokemonContext, scene::TeamPreview)
     if scene.name_b != ""
         battle.opponent.name = scene.name_b
     end
-    battle.opponent_team = [PokemonID(x) for x ∈ scene.team_b]
+    battle.opponent_team = [PokemonID(x) for x in scene.team_b]
     for (i, value) in enumerate(scene.team_b)
         update_team!(parsed_battle, false, i, :id, value)
     end

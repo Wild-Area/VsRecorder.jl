@@ -34,3 +34,10 @@ end
     sheet.image .= blur(sheet.image, 1f0)
 end
 @_sheet_func gender_icons GenderIconSheet true
+
+function initialize_icons()
+    pokemon_icons()
+    item_icons()
+    gender_icons()
+    nothing
+end
