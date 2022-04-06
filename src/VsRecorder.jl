@@ -7,15 +7,16 @@ using VsRecorderBase
 using VsRecorderBase: OrderedDict
 
 include("i18n.jl")
+include("io.jl")
 
-export PokemonID, ItemID, MoveID, AbilityID, Gender
+export PokemonID, ItemID, MoveID, AbilityID, NatureID, Gender
+include("types/identifiers.jl")
 include("types/pokemon.jl")
 
 export poke_dex, move_dex,
     import_team, export_team
 include("data/Data.jl")
 using .Data
-include("io.jl")
 
 export PokemonBattle
 include("config.jl")

@@ -7,7 +7,8 @@ using VsRecorderBase: OrderedDict
 import SimpleI18n
 import ..VsRecorder
 using ..VsRecorder: Stats, Pokemon, Team,
-    PokemonID, ItemID, MoveID, AbilityID, Gender
+    PokemonID, ItemID, MoveID, AbilityID, Gender,
+    datapath
     
 include("utils.jl")
 

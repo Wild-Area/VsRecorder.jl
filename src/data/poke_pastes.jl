@@ -18,55 +18,9 @@ function _parse_stats!(stats, text)
     stats
 end
 
-function get_nature(nature)
-    if nature == "Adamant"
-        :atk, :spa
-    elseif nature == "Bold"
-        :def, :atk
-    elseif nature == "brave"
-        :atk, :spe
-    elseif nature == "Calm"
-        :spd, :atk
-    elseif nature == "Careful"
-        :spd, :spa
-    elseif nature == "Gentle"
-        :spd, :def
-    elseif nature == "Hasty"
-        :spe, :def
-    elseif nature == "Impish"
-        :def, :spa
-    elseif nature == "Jolly"
-        :spe, :spa
-    elseif nature == "Lax"
-        :def, :spd
-    elseif nature == "Lonely"
-        :atk, :def
-    elseif nature == "Mild"
-        :spa, :def
-    elseif nature == "Modest"
-        :spa, :atk
-    elseif nature == "Naive"
-        :spe, :spd
-    elseif nature == "Naughty"
-        :atk, :spd
-    elseif nature == "Quiet"
-        :spa, :spe
-    elseif nature == "Rash"
-        :spa, :spd
-    elseif nature == "Relaxed"
-        :def, :spe
-    elseif nature == "Sassy"
-        :spd, :spe
-    elseif nature == "Timid"
-        :spe, :atk
-    else
-        nothing, nothing
-    end
-end
-
-function calculate_stats(poke::DexPokemon, level::Int64, evs::Stats, ivs::Stats, nature::Nullable{AbstractString})
+function calculate_stats(poke::DexPokemon, level::Int64, evs::Stats, ivs::Stats, nature::Missable{NatureID})
     stats = Stats()
-    up, down = get_nature(nature)
+    up, down = get_nature_effect(nature)
     for (field, dex_field) in zip(STATS_FIELDS, DEX_STATS_FIELDS)
         base = getfield(poke.base_stats, dex_field)
         ev = getfield(evs, field)
@@ -126,7 +80,6 @@ function import_poke(input::AbstractString)
     adex = ability_dex()
     evs = Stats()
     ivs = Stats()
-    nature = nothing
     for line in lines[2:end]
         m = match(
             r"^(-)( ([A-Z][a-z\']*(?:[- ][A-Za-z][a-z\']*)*)(?: \[([A-Z][a-z]+)\])?(?: / [A-Z][a-z\']*(?:[- ][A-Za-z][a-z\']*)*)* *)$",
@@ -142,7 +95,7 @@ function import_poke(input::AbstractString)
             line
         )
         if !isnothing(m)
-            nature = strip(m.captures[1])
+            poke.nature = search_dex(nature_dex(), strip(m.captures[1]))
             break
         end
         tmp = split(line, ':', limit = 2)
@@ -167,7 +120,7 @@ function import_poke(input::AbstractString)
         else
         end
     end
-    poke.stats = calculate_stats(dex_poke, poke.level, evs, ivs, nature)
+    poke.stats = calculate_stats(dex_poke, poke.level, evs, ivs, poke.nature)
     poke
 end
 
@@ -187,6 +140,56 @@ function import_team(
         push!(team.pokemons, import_poke(poke))
     end
     team
+end
+
+function inv_calculate_stats(poke::Pokemon, level::Int64)
+    dex_poke = poke_dex()[poke.id]
+    base_stats = dex_poke.base_stats
+    stats = poke.stats
+    ivs = Stats()
+    evs = Stats()
+    ismissing(stats) && return poke.nature, missing, missing
+    ivs.hp, evs.hp = if !ismissing(stats.hp)
+        base = base_stats.hp
+        t = ceil((stats.hp - level - 10) * 100 / level) - base * 2
+        if t < 31
+            t, missing
+        elseif t == 31
+            missing, missing
+        else
+            missing, (t - 31) * 4
+        end
+    end
+    
+end
+
+function _print_stats(io::IO, prefix, stats::Stats)
+    tio = IOBuffer()
+    printed = false
+    for field in STATS_FIELDS
+        v = getfield(stats, field)
+        ismissing(v) && continue
+        print(
+            tio, printed ? " / " : "", v, ' ',
+            if field == :hp
+                "HP"
+            elseif field == :atk
+                "Atk"
+            elseif field == :def
+                "Def"
+            elseif field == :spa
+                "SpA"
+            elseif field == :spd
+                "SpD"
+            elseif field == :spe
+                "Spe"
+            end
+        )
+        printed = true
+    end
+    if printed
+        println(io, prefix, String(take!(tio)))
+    end
 end
 
 function export_poke(poke::Pokemon; language = "en")
@@ -216,10 +219,10 @@ function export_poke(poke::Pokemon; language = "en")
     end
     level = ismissing(poke.level) ? 50 : poke.level
     println(io, "Level: ", level)
-    nature, evs, ivs = inv_calculate_stats(poke.stats)
-    print_stats(io, evs)
-    print_stats(io, ivs)
-    println(io, nature, " Nature")
+    nature, evs, ivs = inv_calculate_stats(poke, level)
+    _print_stats(io, "EVs: ", evs)
+    _print_stats(io, "IVs: ", ivs)
+    println(io, i18n(nature, language = lang), " Nature")
     for move in poke.moves
         println(io, "- ", i18n(move, language = lang))
     end

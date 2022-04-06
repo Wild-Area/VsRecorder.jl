@@ -1,6 +1,6 @@
-const PokemonIconSheetFile = joinpath(artifact"data", "sprites", "swsh-pokemon-icons.png")
-const ItemIconSheetFile = joinpath(artifact"data", "sprites", "swsh-item-icons.png")
-const GenderIconSheetFile = joinpath(artifact"data", "sprites", "gender-icons.png")
+const PokemonIconSheetFile = datapath("sprites", "swsh-pokemon-icons.png")
+const ItemIconSheetFile = datapath("sprites", "swsh-item-icons.png")
+const GenderIconSheetFile = datapath("sprites", "gender-icons.png")
 
 macro _sheet_func(func_name, sheet_name, has_mask = false, preprocess = nothing)
     gray_name = Symbol(sheet_name, :Gray)

@@ -97,11 +97,12 @@ Base.@kwdef struct DexMove
 end
 
 
-const PokeDexFile = joinpath(artifact"data", "dex", "pokedex.yaml")
-const MoveDexFile = joinpath(artifact"data", "dex", "movedex.yaml")
+const PokeDexFile = datapath("dex", "pokedex.yaml")
+const MoveDexFile = datapath("dex", "movedex.yaml")
 # Use English names for the ability/item dexes. (for now?)
-const AbilityDexFile = joinpath(artifact"data", "locales", "en", "ability.yaml")
-const ItemDexFile = joinpath(artifact"data", "locales", "en", "item.yaml")
+const AbilityDexFile = datapath("locales", "en", "ability.yaml")
+const ItemDexFile = datapath("locales", "en", "item.yaml")
+const NatureDexFile = datapath("locales", "en", "nature.yaml")
 
 macro _dex_func(func_name, dex_name, id_type, dex_type)
     file_name = Symbol(dex_name, :File)
@@ -121,6 +122,7 @@ macro _dex_func(func_name, dex_name, id_type, dex_type)
     end |> esc
 end
 
+@_dex_func nature_dex NatureDex NatureID String
 @_dex_func ability_dex AbilityDex AbilityID String
 @_dex_func item_dex ItemDex ItemID String
 @_dex_func move_dex MoveDex MoveID DexMove

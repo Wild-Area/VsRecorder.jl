@@ -1,1 +1,2 @@
-load_data(path...) = load(joinpath(artifact"data", path...))
+datapath(path...) = joinpath(artifact"data", path...)
+load_data(path...) = load(datapath(path...))

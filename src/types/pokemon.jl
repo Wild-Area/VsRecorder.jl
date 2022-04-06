@@ -1,15 +1,3 @@
-# All values will be English names so that the `yaml` files will be human-readable.
-@type_wrapper PokemonID String
-@type_wrapper ItemID String
-@type_wrapper MoveID String
-@type_wrapper AbilityID String
-@type_wrapper Gender Union{Nothing, Bool}
-
-SimpleI18n.i18n(id::PokemonID; language = nothing) = get_i18n("pokemon", id, lang = language)
-SimpleI18n.i18n(id::ItemID; language = nothing) = get_i18n("item", id, lang = language)
-SimpleI18n.i18n(id::MoveID; language = nothing) = get_i18n("move", id, lang = language)
-SimpleI18n.i18n(id::AbilityID; language = nothing) = get_i18n("ability", id, lang = language)
-
 # Using mutable to allow missing values
 @missable mutable struct Player
     name::String
@@ -34,6 +22,7 @@ end
     item::ItemID
     stats::Stats
     ability::AbilityID
+    nature::NatureID
     shiny::Bool
     sent_out::Bool = false
     dynamaxed::Bool = false
