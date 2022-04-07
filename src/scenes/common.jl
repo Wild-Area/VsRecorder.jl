@@ -37,3 +37,5 @@ catch e
 end
 
 VsRecorderBase.vs_update!(ctx::PokemonContext, scene::AbstractPokemonScene) = _vs_update!(ctx, scene)
+
+should_include(scene_type::Type{<:AbstractPokemonScene}, ctx::PokemonContext) = true

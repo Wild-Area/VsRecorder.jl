@@ -49,8 +49,8 @@ if use_gray_image
     @warn "Using gray image is not recommended for its low accuracy."
 end
 
-set_language!(GlobalI18nContext[], lowercase(string(language)), String[])
-ocr_language = OCR_LANGUAGES[language]
+set_language!(GlobalI18nContext[], string(language), String[])
+ocr_language = VsI18n.OCR_LANGUAGES[language]
 strategy = DefaultStrategy(
     match_threshold = match_threshold,
     height = feature_size[1],

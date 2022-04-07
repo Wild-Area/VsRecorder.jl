@@ -1,6 +1,17 @@
+module VsI18n
+
+using SimpleI18n
+
+using VsRecorderBase: download_ocr_language
+using ..VsRecorder: datapath
+
+export GlobalI18nContext, GameLanguage
+export get_i18n, download_all_ocr_languages, all_ocr_languages,
+    default_language
+
 const GlobalI18nContext = Ref{Union{Nothing, SimpleI18n.I18nContext}}(nothing)
 
-function initialize_i18n()
+function __init__()
     GlobalI18nContext[] = SimpleI18n.setup(
         datapath("locales"),
         "en"
@@ -18,6 +29,7 @@ end
     DE
     IT
 end
+Base.string(l::GameLanguage) = lowercase(invoke(string, Tuple{Enum}, l))
 
 const OCR_LANGUAGES = Dict(
     EN => "eng",
@@ -82,4 +94,6 @@ end
 function get_i18n(path...; lang = nothing)
     key = join(path, '.')
     i18n(GlobalI18nContext[], key; language = lang)
+end
+
 end

@@ -22,7 +22,11 @@ function feature_image_and_masks(source::PokemonBattle, ctx::VsContext)
         name = feature_image_name(scene_type, source)
         filename = "$name.png"
         img = load_data("scenes", language, filename)
-        mask = load_data("scenes", "mask", filename)
+        mask = try
+            load_data("scenes", "mask", filename)
+        catch
+            ones(Float32, size(img))
+        end
         (scene_type, img, mask)
     end
 end

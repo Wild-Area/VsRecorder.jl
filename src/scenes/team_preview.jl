@@ -83,8 +83,6 @@ end
 feature_image_name(::Type{TeamPreview}, ::PokemonBattle) = "team-preview"
 feature_image_name(::Type{TeamPreviewSelecting}, ::PokemonBattle) = "team-preview-selecting"
 
-still_available(::Union{TeamPreview, TeamPreviewSelecting}, ::PokemonContext) = true
-
 function parse_pokemon_icon(img, i, player; preprocess=(player == 3))
     icons = pokemon_icons()
     icon = get_area(img, i, player, POKEMON_ICON)
@@ -126,7 +124,7 @@ function parse_gender(img, i, player, selected=false)
     r = table_search(
         icon, icons
     )
-    Gender(r === "null" ? nothing : r === "male")
+    r == "null" ? GENDER_NULL : r == "male" ? GENDER_MALE : GENDER_FEMALE
 end
 
 function _parse_number(img, i, player, ctx, selected, area_type)

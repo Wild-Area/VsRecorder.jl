@@ -32,6 +32,7 @@ end
     title::String
     author::String
     notes::String
+    rental_code::String
     pokemons::Vector{Pokemon} = Pokemon[]
 end
 

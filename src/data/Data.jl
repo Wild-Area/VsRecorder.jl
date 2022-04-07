@@ -8,13 +8,19 @@ import SimpleI18n
 using SimpleI18n: i18n
 import ..VsRecorder
 using ..VsRecorder: Stats, Pokemon, Team,
-    PokemonID, ItemID, MoveID, AbilityID, NatureID, Gender,
+    VsAbstractID,
+    PokemonID, ItemID, MoveID, AbilityID, NatureID,
+    Gender, GENDER_NULL, GENDER_MALE, GENDER_FEMALE,
+    PokemonBattle, PokemonContext,
     datapath
-    
+using ..VsI18n
+
 include("utils.jl")
 
 export PokemonType
-export poke_dex, move_dex, item_dex, ability_dex
+export poke_dex, move_dex,
+    item_list, ability_list, poke_list, move_list,
+    search_dex
 include("dex.jl")
 
 export pokemon_icons, item_icons, gender_icons

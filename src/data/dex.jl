@@ -99,10 +99,6 @@ end
 
 const PokeDexFile = datapath("dex", "pokedex.yaml")
 const MoveDexFile = datapath("dex", "movedex.yaml")
-# Use English names for the ability/item dexes. (for now?)
-const AbilityDexFile = datapath("locales", "en", "ability.yaml")
-const ItemDexFile = datapath("locales", "en", "item.yaml")
-const NatureDexFile = datapath("locales", "en", "nature.yaml")
 
 macro _dex_func(func_name, dex_name, id_type, dex_type)
     file_name = Symbol(dex_name, :File)
@@ -115,18 +111,40 @@ macro _dex_func(func_name, dex_name, id_type, dex_type)
                     fi,
                     $T,
                     other_key = :other_data,
-                    dicttype = OrderedDict
+                    dicttype = OrderedDict,
+                    loading_dex = true
                 )
             end
         end
     end |> esc
 end
 
-@_dex_func nature_dex NatureDex NatureID String
-@_dex_func ability_dex AbilityDex AbilityID String
-@_dex_func item_dex ItemDex ItemID String
 @_dex_func move_dex MoveDex MoveID DexMove
 @_dex_func poke_dex PokeDex PokemonID DexPokemon
+
+macro _list_dex_func(func_name, id_type, i18n_key)
+    i18n_key = string(i18n_key)
+    quote
+        function $func_name(language = default_language())::SimpleI18n.I18nData
+            ctx = VsI18n.GlobalI18nContext[]
+            lang = SimpleI18n.parse_locale_name(string(language))
+            ctx.data[lang][$i18n_key]
+        end
+        $func_name(conf::VsConfig) = $func_name(conf.source.language)
+        $func_name(ctx::PokemonContext) = $func_name(ctx.config)
+        VsRecorderBase._parse(x, ::Type{$id_type}; loading_dex = false, kwargs...) = if loading_dex
+            search_dex($func_name(VsI18n.EN), x) |> $id_type
+        else
+            $id_type(x)
+        end
+    end |> esc
+end
+
+@_list_dex_func nature_list NatureID nature
+@_list_dex_func ability_list AbilityID ability
+@_list_dex_func item_list ItemID item
+@_list_dex_func move_list MoveID move
+@_list_dex_func poke_list PokemonID pokemon
 
 function search_dex(dex::AbstractDict, name)
     for (id, value) in dex
@@ -137,23 +155,24 @@ function search_dex(dex::AbstractDict, name)
     name
 end
 
-function search_dex(dex::AbstractDict{T, String}, name) where T
-    for (id, value) in dex
-        if value == name
+function search_dex(dex::Union{SimpleI18n.I18nData, AbstractDict{T, String} where T}, name)
+    for id in keys(dex)
+        if dex[id] == name
             return id
         end
     end
     name
 end
+Base.getindex(data::SimpleI18n.I18nData, key::VsAbstractID) = data[string(key)]
+Base.getindex(data::AbstractDict{T}, key::AbstractString) where T <: VsAbstractID = data[T(key)]
 
 VsRecorderBase._parse(
     dict::OrderedDict, ::Type{Vector{AbilityID}};
     _...
-) = AbilityID[search_dex(ability_dex(), x) for x in values(dict)]
+) = AbilityID[search_dex(ability_list(VsI18n.EN), x) for x in values(dict)]
 
 function initialize_dex()
-    ability_dex()
-    item_dex()
     move_dex()
     poke_dex()
+    nothing
 end

@@ -1,16 +1,27 @@
 # All values will be English names so that the `yaml` files will be human-readable.
-@type_wrapper PokemonID String
-@type_wrapper ItemID String
-@type_wrapper MoveID String
-@type_wrapper AbilityID String
-@type_wrapper NatureID String
-@type_wrapper Gender Union{Nothing, Bool}
+abstract type VsAbstractID{T} <: SimpleTypeWrapper{T} end
+macro _id_type_wrapper(name, type, i18n_key)
+    i18n_key = string(i18n_key)
+    i18n_function = esc(:(get_i18n_namespace(::Type{$name}) = $i18n_key))
+    quote
+        @type_wrapper $name $type nothing VsAbstractID
+        $i18n_function
+    end
+end
+@_id_type_wrapper PokemonID String pokemon
+@_id_type_wrapper ItemID String item
+@_id_type_wrapper MoveID String move
+@_id_type_wrapper AbilityID String ability
+@_id_type_wrapper NatureID String nature
 
-SimpleI18n.i18n(id::PokemonID; language = nothing) = get_i18n("pokemon", id, lang = language)
-SimpleI18n.i18n(id::ItemID; language = nothing) = get_i18n("item", id, lang = language)
-SimpleI18n.i18n(id::MoveID; language = nothing) = get_i18n("move", id, lang = language)
-SimpleI18n.i18n(id::AbilityID; language = nothing) = get_i18n("ability", id, lang = language)
-SimpleI18n.i18n(id::NatureID; language = nothing) = get_i18n("nature", id, lang = language)
+SimpleI18n.i18n(id::VsAbstractID; language = nothing) = get_i18n(get_i18n_namespace(typeof(id)), id, lang = language)
+
+@enum Gender begin
+    GENDER_NULL
+    GENDER_MALE
+    GENDER_FEMALE
+end
+VsRecorderBase.enum_prefix(::Type{Gender}) = "GENDER_"
 
 const NATURE_NEUTURAL_DEFAULT = NatureID("hardy")
 const NATURE_EFFECTs = Dict{String, Tuple{Symbol, Symbol}}(

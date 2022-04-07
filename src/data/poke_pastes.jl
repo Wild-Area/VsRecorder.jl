@@ -78,14 +78,14 @@ function import_poke(input::AbstractString)
     poke.ability = dex_poke.abilities[1]
     if !isnothing(head.captures[6])
         gender = head.captures[6]
-        poke.gender = gender == "M" ? true : gender == "F" ? false : nothing
+        poke.gender = gender == "M" ? GENDER_MALE : gender == "F" ? GENDER_FEMALE : GENDER_NULL
     end
     if !isnothing(head.captures[9])
         iid = head.captures[9]
-        poke.item = search_dex(item_dex(), iid)
+        poke.item = search_dex(item_list(VsI18n.EN), iid)
     end
     mdex = move_dex()
-    adex = ability_dex()
+    adex = ability_list(VsI18n.EN)
     evs = Stats()
     ivs = Stats()
     for line in lines[2:end]
@@ -103,7 +103,7 @@ function import_poke(input::AbstractString)
             line
         )
         if !isnothing(m)
-            poke.nature = search_dex(nature_dex(), strip(m.captures[1]))
+            poke.nature = search_dex(nature_list(VsI18n.EN), strip(m.captures[1]))
             continue
         end
         tmp = split(line, ':', limit = 2)
@@ -273,8 +273,8 @@ function export_poke(poke::Pokemon; language = "en")
     else
         print(io, i18n(poke.id, language = lang))
     end
-    if !ismissing(poke.gender) && !isnothing(poke.gender.value)
-        print(io, " (", poke.gender.value ? 'M' : 'F', ')')
+    if !ismissing(poke.gender) && poke.gender ≢ GENDER_NULL
+        print(io, " (", poke.gender ≡ GENDER_MALE ? 'M' : 'F', ')')
     end
     if !ismissing(poke.item)
         print(io, " @ ", i18n(poke.item, language = lang))
