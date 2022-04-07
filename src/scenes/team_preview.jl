@@ -144,9 +144,8 @@ parse_hp(img, i, ctx, selected=false) =
 function parse_name(img, player, ctx; threshold = 0.35f0)
     player == 3 && return ""
     text_area = get_area(img, 1, player, PLAYER_NAME)
-    img = complement.(Gray.(text_area))
-    img[img .> threshold] .= 1
-    ocr(img, ctx.data.name_ocr_instance)
+    text_area = prepare_text_for_ocr(text_area, threshold)
+    ocr(text_area, ctx.data.name_ocr_instance)
 end
 
 # player == 1,2,3,4 for A,B,A-Selecting,B-Selecting
