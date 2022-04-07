@@ -40,11 +40,15 @@ function default_language(locale = SimpleI18n.get_system_language())
         t
     end
     if lang == "zh"
-        if region ∈ ("hk", "tw")
+        if region ∈ ("hk", "tw", "hant")
             ZHT
         else
             ZHS
         end
+    elseif lang == "zht"
+        ZHT
+    elseif lang == "zhs"
+        ZHS
     elseif lang == "ja"
         JA
     elseif lang == "es"

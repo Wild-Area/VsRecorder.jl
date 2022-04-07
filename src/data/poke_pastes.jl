@@ -2,7 +2,7 @@
 
 const STATS_FIELDS = (:hp, :attack, :defense, :special_attack, :special_defense, :speed)
 const DEX_STATS_FIELDS = (:hp, :atk, :def, :spa, :spd, :spe)
-
+const STATS_NAMES = ["HP", "Atk", "Def", "SpA", "SpD", "Spe"]
 
 function _parse_stats!(stats, text)
     m = match(
@@ -18,9 +18,28 @@ function _parse_stats!(stats, text)
     stats
 end
 
+_stats_from_iv_ev_hp(iv, ev, base, level) = if base == 1
+    1
+else
+    (2base + iv + ev ÷ 4) * level ÷ 100 + 10 + level
+end
+function _stats_from_iv_ev(
+    iv::Int64, ev::Int64, base::Int64, level::Int64,
+    dex_field = nothing, up = nothing, down = nothing
+)
+    dex_field == :hp && return _stats_from_iv_ev_hp(iv, ev, base, level)
+    value = (2base + iv + ev ÷ 4) * level ÷ 100 + 5
+    if dex_field == up
+        value = value * 11 ÷ 10
+    elseif dex_field == down
+        value = value * 9 ÷ 10
+    end
+    value
+end
+
 function calculate_stats(poke::DexPokemon, level::Int64, evs::Stats, ivs::Stats, nature::Missable{NatureID})
     stats = Stats()
-    up, down = get_nature_effect(nature)
+    up, down = VsRecorder.get_nature_effect(nature)
     for (field, dex_field) in zip(STATS_FIELDS, DEX_STATS_FIELDS)
         base = getfield(poke.base_stats, dex_field)
         ev = getfield(evs, field)
@@ -31,18 +50,7 @@ function calculate_stats(poke::DexPokemon, level::Int64, evs::Stats, ivs::Stats,
         if ismissing(iv)
             iv = 31
         end
-        value = if base == 1
-            1
-        elseif dex_field == :hp
-            (base * 2 + iv + ev ÷ 4) * level ÷ 100 + 10 + level
-        else
-            (base * 2 + iv + ev ÷ 4) * level ÷ 100 + 5
-        end
-        if dex_field == up
-            value = value * 11 ÷ 10
-        elseif dex_field == down
-            value = value * 9 ÷ 10
-        end
+        value = _stats_from_iv_ev(iv, ev, base, level, dex_field, up, down)
         setfield!(stats, field, value)
     end
     stats
@@ -88,7 +96,7 @@ function import_poke(input::AbstractString)
         if !isnothing(m)
             mid = m.captures[3]
             push!(poke.moves, search_dex(mdex, mid))
-            break
+            continue
         end
         m = match(
             r"^(.+) Nature.*$",
@@ -96,7 +104,7 @@ function import_poke(input::AbstractString)
         )
         if !isnothing(m)
             poke.nature = search_dex(nature_dex(), strip(m.captures[1]))
-            break
+            continue
         end
         tmp = split(line, ':', limit = 2)
         length(tmp) == 2 || continue
@@ -110,7 +118,7 @@ function import_poke(input::AbstractString)
             for id in dex_poke.abilities
                 if adex[id] == values
                     poke.ability = id
-                    break
+                    continue
                 end
             end
         elseif key == "Level"
@@ -142,48 +150,109 @@ function import_team(
     team
 end
 
-function inv_calculate_stats(poke::Pokemon, level::Int64)
+function _stats_to_iv_ev_hp(value, base, level)
+    if _stats_from_iv_ev_hp(31, 0, base, level) == value
+        return 31, 0
+    end
+    t = cld((value - level - 10) * 100, level) - 2base
+    if t ≤ 31
+        t, 0
+    else
+        31, (t - 31) * 4
+    end
+end
+function _stats_to_iv_ev(
+    value::Int64, base::Int64, level::Int64,
+    dex_field = nothing, up = nothing, down = nothing
+)
+    dex_field == :hp && return _stats_to_iv_ev_hp(value, base, level)
+    if _stats_from_iv_ev(31, 0, base, level, dex_field, up, down) == value
+        return 31, 0
+    end
+    if dex_field == up
+        value = cld(value * 10, 11)
+    elseif dex_field == down
+        value = cld(value * 10, 9)
+    end
+    t = cld((value - 5) * 100, level) - 2base
+    if t ≤ 31
+        t, 0
+    else
+        31, (t - 31) * 4
+    end
+end
+
+_get_total_evs(evs::Stats) = sum(getfield(evs, field) for field in STATS_FIELDS)
+
+function _try_natures(poke::Pokemon, level::Int64, up = nothing, down = nothing)
+    if isnothing(up) ≠ isnothing(down)
+        first = isnothing(up) ? down : up
+        for second in DEX_STATS_FIELDS
+            first == second && continue
+            nature = VsRecorder.get_nature(
+                isnothing(up) ? second : first,
+                isnothing(up) ? first : second
+            )
+            nature, ivs, evs = inv_calculate_stats(poke, level, nature)
+            _get_total_evs(evs) ≤ 510 && return nature, ivs, evs
+        end
+    end
+    for up in DEX_STATS_FIELDS
+        for down in DEX_STATS_FIELDS
+            up == down && continue
+            nature = VsRecorder.get_nature(up, down)
+            nature, ivs, evs = inv_calculate_stats(poke, level, nature)
+            _get_total_evs(evs) ≤ 510 && return nature, ivs, evs
+        end
+    end
+    @warn "No valid nature found for $(poke.id)"
+    inv_calculate_stats(poke, level, VsRecorder.NATURE_NEUTURAL_DEFAULT)
+end
+
+function inv_calculate_stats(poke::Pokemon, level::Int64, nature = poke.nature)
     dex_poke = poke_dex()[poke.id]
     base_stats = dex_poke.base_stats
     stats = poke.stats
     ivs = Stats()
     evs = Stats()
-    ismissing(stats) && return poke.nature, missing, missing
-    ivs.hp, evs.hp = if !ismissing(stats.hp)
-        base = base_stats.hp
-        t = ceil((stats.hp - level - 10) * 100 / level) - base * 2
-        if t < 31
-            t, missing
-        elseif t == 31
-            missing, missing
-        else
-            missing, (t - 31) * 4
-        end
+    ismissing(stats) && return nature, ivs, evs
+    if !ismissing(stats.hp)
+        ivs.hp, evs.hp = _stats_to_iv_ev(stats.hp, base_stats.hp, level, :hp)
     end
-    
-end
-
-function _print_stats(io::IO, prefix, stats::Stats)
-    tio = IOBuffer()
-    printed = false
-    for field in STATS_FIELDS
+    up, down = VsRecorder.get_nature_effect(nature)
+    for (field, dex_field) in zip(STATS_FIELDS, DEX_STATS_FIELDS)
         v = getfield(stats, field)
         ismissing(v) && continue
+        base = getfield(base_stats, dex_field)
+        iv, ev = _stats_to_iv_ev(v, base, level, dex_field, up, down)
+        if ismissing(nature)
+            if iv < 0
+                down = dex_field
+                iv, ev = _stats_to_iv_ev(v, base, level, dex_field, up, down)
+            elseif ev > 252
+                up = dex_field
+                iv, ev = _stats_to_iv_ev(v, base, level, dex_field, up, down)
+            end
+        end
+        setfield!.((ivs, evs), (field,), (iv, ev))
+    end
+    if isnothing(up) ≠ isnothing(down) || ismissing(nature) && _get_total_evs(evs) > 510
+        # Just brute force it
+        return _try_natures(poke, level, up, down)
+    end
+    nature = VsRecorder.get_nature(up, down)
+    nature, ivs, evs
+end
+
+function _print_stats(io::IO, prefix, stats::Stats, default)
+    tio = IOBuffer()
+    printed = false
+    for (i, field) in enumerate(STATS_FIELDS)
+        v = getfield(stats, field)
+        (ismissing(v) || v == default) && continue
         print(
             tio, printed ? " / " : "", v, ' ',
-            if field == :hp
-                "HP"
-            elseif field == :atk
-                "Atk"
-            elseif field == :def
-                "Def"
-            elseif field == :spa
-                "SpA"
-            elseif field == :spd
-                "SpD"
-            elseif field == :spe
-                "Spe"
-            end
+            STATS_NAMES[i]
         )
         printed = true
     end
@@ -219,10 +288,10 @@ function export_poke(poke::Pokemon; language = "en")
     end
     level = ismissing(poke.level) ? 50 : poke.level
     println(io, "Level: ", level)
-    nature, evs, ivs = inv_calculate_stats(poke, level)
-    _print_stats(io, "EVs: ", evs)
-    _print_stats(io, "IVs: ", ivs)
+    nature, ivs, evs = inv_calculate_stats(poke, level)
+    _print_stats(io, "EVs: ", evs, 0)
     println(io, i18n(nature, language = lang), " Nature")
+    _print_stats(io, "IVs: ", ivs, 31)
     for move in poke.moves
         println(io, "- ", i18n(move, language = lang))
     end
@@ -239,7 +308,7 @@ function export_team(team::Team; language = "en")
         language = VsRecorder.default_language(language)
     end
     join(
-        (export_poke(poke; language = language) for poke in team),
-        "\n\n"
+        (export_poke(poke; language = language) for poke in team.pokemons),
+        '\n'
     )
 end

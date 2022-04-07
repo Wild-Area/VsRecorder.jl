@@ -38,7 +38,7 @@ const NATURE_EFFECTs = Dict{String, Tuple{Symbol, Symbol}}(
 
 function get_nature_effect(nature)
     (isnothing(nature) || ismissing(nature)) && return (nothing, nothing)
-    nature = string(nature)
+    nature = lowercase(string(nature))
     get(NATURE_EFFECTs, nature, (nothing, nothing))
 end
 
