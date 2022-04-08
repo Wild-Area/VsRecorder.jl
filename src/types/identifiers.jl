@@ -12,7 +12,6 @@ end
 @_id_type_wrapper ItemID String item
 @_id_type_wrapper MoveID String move
 @_id_type_wrapper AbilityID String ability
-@_id_type_wrapper NatureID String nature
 
 SimpleI18n.i18n(id::VsAbstractID; language = nothing) = get_i18n(get_i18n_namespace(typeof(id)), id, lang = language)
 
@@ -23,42 +22,76 @@ SimpleI18n.i18n(id::VsAbstractID; language = nothing) = get_i18n(get_i18n_namesp
 end
 VsRecorderBase.enum_prefix(::Type{Gender}) = "GENDER_"
 
-const NATURE_NEUTURAL_DEFAULT = NatureID("hardy")
-const NATURE_EFFECTs = Dict{String, Tuple{Symbol, Symbol}}(
-    "adamant" => (:atk, :spa),
-    "bold" => (:def, :atk),
-    "brave" => (:atk, :spe),
-    "calm" => (:spd, :atk),
-    "careful" => (:spd, :spa),
-    "gentle" => (:spd, :def),
-    "hasty" => (:spe, :def),
-    "impish" => (:def, :spa),
-    "jolly" => (:spe, :spa),
-    "lax" => (:def, :spd),
-    "lonely" => (:atk, :def),
-    "mild" => (:spa, :def),
-    "modest" => (:spa, :atk),
-    "naive" => (:spe, :spd),
-    "naughty" => (:atk, :spd),
-    "quiet" => (:spa, :spe),
-    "rash" => (:spa, :spd),
-    "relaxed" => (:def, :spe),
-    "sassy" => (:spd, :spe),
-    "timid" => (:spe, :atk),
-)
-
-function get_nature_effect(nature)
-    (isnothing(nature) || ismissing(nature)) && return (nothing, nothing)
-    nature = lowercase(string(nature))
-    get(NATURE_EFFECTs, nature, (nothing, nothing))
+@enum PokemonType begin
+    TYPE_BIRD = 0
+    TYPE_NORMAL
+    TYPE_FIGHTING
+    TYPE_FLYING
+    TYPE_POISON
+    TYPE_GROUND
+    TYPE_ROCK
+    TYPE_BUG
+    TYPE_GHOST
+    TYPE_STEEL
+    TYPE_FIRE
+    TYPE_WATER
+    TYPE_GRASS
+    TYPE_ELECTRIC
+    TYPE_PSYCHIC
+    TYPE_ICE
+    TYPE_DRAGON
+    TYPE_DARK
+    TYPE_FAIRY
 end
+VsRecorderBase.enum_prefix(::Type{PokemonType}) = "TYPE_"
+
+const STATS_FIELDS = (:hp, :attack, :defense, :special_attack, :special_defense, :speed)
+const DEX_STATS_FIELDS = (:hp, :atk, :def, :spa, :spd, :spe)
+
+@enum Nature begin
+    NATURE_HARDY = 0
+    NATURE_LONELY
+    NATURE_ADAMANT
+    NATURE_NAUGHTY
+    NATURE_BRAVE
+    NATURE_BOLD
+    NATURE_DOCILE
+    NATURE_IMPISH
+    NATURE_LAX
+    NATURE_RELAXED
+    NATURE_MODEST
+    NATURE_MILD
+    NATURE_BASHFUL
+    NATURE_RASH
+    NATURE_QUIET
+    NATURE_CALM
+    NATURE_GENTLE
+    NATURE_CAREFUL
+    NATURE_QUIRKY
+    NATURE_SASSY
+    NATURE_TIMID
+    NATURE_HASTY
+    NATURE_JOLLY
+    NATURE_NAIVE
+    NATURE_SERIOUS
+end
+VsRecorderBase.enum_prefix(::Type{Nature}) = "NATURE_"
+Nature(s::AbstractString) = enum_from_string(s, Nature)
+SimpleI18n.i18n(id::Nature; language = nothing) = get_i18n("nature", enum_to_string(id), lang = language)
+
+const EnumIDTypes = Union{PokemonType, Nature}
+
+const NATURE_NEUTURAL_DEFAULT = NATURE_HARDY
+function get_nature_effect(nature::Nature)
+    up, down = divrem(Int64(nature), 5)
+    up ≡ down && return (nothing, nothing)
+    (DEX_STATS_FIELDS[up + 1], DEX_STATS_FIELDS[down + 1])
+end
+get_nature_effect(::Missing) = (nothing, nothing)
 
 function get_nature(up, down)
-    for (k, v) in NATURE_EFFECTs
-        if v == (up, down)
-            return NatureID(k)
-        end
-    end
-    NATURE_NEUTURAL_DEFAULT
+    a = findfirst(==(up), DEX_STATS_FIELDS)
+    b = findfirst(==(down), DEX_STATS_FIELDS)
+    a ≡ b && return NATURE_NEUTURAL_DEFAULT
+    Nature((a - 1) * 5 + (b - 1))
 end
-

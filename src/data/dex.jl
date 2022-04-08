@@ -1,26 +1,3 @@
-@enum PokemonType begin
-    DARK
-    ROCK
-    ELECTRIC
-    BUG
-    STEEL
-    NORMAL
-    WATER
-    GROUND
-    POISON
-    GHOST
-    FAIRY
-    FLYING
-    PSYCHIC
-    GRASS
-    ICE
-    FIGHTING
-    FIRE
-    DRAGON
-
-    BIRD
-end
-
 @enum MoveCategory begin
     PHYSICAL
     SPECIAL
@@ -122,13 +99,17 @@ end
 @_dex_func move_dex MoveDex MoveID DexMove
 @_dex_func poke_dex PokeDex PokemonID DexPokemon
 
+struct SimpleListDex{T}
+    data::SimpleI18n.I18nData
+end
+@forward SimpleListDex.data Base.keys, Base.get, Base.haskey, Base.getindex, Base.setindex!
 macro _list_dex_func(func_name, id_type, i18n_key)
     i18n_key = string(i18n_key)
     quote
-        function $func_name(language = default_language())::SimpleI18n.I18nData
+        function $func_name(language = default_language())
             ctx = VsI18n.GlobalI18nContext[]
             lang = SimpleI18n.parse_locale_name(string(language))
-            ctx.data[lang][$i18n_key]
+            SimpleListDex{$id_type}(ctx.data[lang][$i18n_key])
         end
         $func_name(conf::VsConfig) = $func_name(conf.source.language)
         $func_name(ctx::PokemonContext) = $func_name(ctx.config)
@@ -140,7 +121,7 @@ macro _list_dex_func(func_name, id_type, i18n_key)
     end |> esc
 end
 
-@_list_dex_func nature_list NatureID nature
+@_list_dex_func nature_list Nature nature
 @_list_dex_func ability_list AbilityID ability
 @_list_dex_func item_list ItemID item
 @_list_dex_func move_list MoveID move
@@ -152,19 +133,18 @@ function search_dex(dex::AbstractDict, name)
             return id
         end
     end
-    name
 end
-
-function search_dex(dex::Union{SimpleI18n.I18nData, AbstractDict{T, String} where T}, name)
+function search_dex(dex::Union{SimpleListDex{T}, AbstractDict{T, String}}, name) where T
     for id in keys(dex)
         if dex[id] == name
-            return id
+            return T(id)
         end
     end
-    name
+    T(name)
 end
 Base.getindex(data::SimpleI18n.I18nData, key::VsAbstractID) = data[string(key)]
 Base.getindex(data::AbstractDict{T}, key::AbstractString) where T <: VsAbstractID = data[T(key)]
+Base.getindex(data::SimpleI18n.I18nData, key::EnumIDTypes) = data[enum_to_string(key)]
 
 VsRecorderBase._parse(
     dict::OrderedDict, ::Type{Vector{AbilityID}};

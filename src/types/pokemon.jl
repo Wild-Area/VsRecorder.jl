@@ -22,7 +22,7 @@ end
     item::ItemID
     stats::Stats
     ability::AbilityID
-    nature::NatureID
+    nature::Nature
     shiny::Bool
     sent_out::Bool = false
     dynamaxed::Bool = false

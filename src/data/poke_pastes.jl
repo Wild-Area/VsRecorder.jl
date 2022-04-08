@@ -1,8 +1,6 @@
 # https://github.com/felixphew/pokepaste/blob/v3/syntax.go
 
-const STATS_FIELDS = (:hp, :attack, :defense, :special_attack, :special_defense, :speed)
-const DEX_STATS_FIELDS = (:hp, :atk, :def, :spa, :spd, :spe)
-const STATS_NAMES = ["HP", "Atk", "Def", "SpA", "SpD", "Spe"]
+const STATS_NAMES = ("HP", "Atk", "Def", "SpA", "SpD", "Spe")
 
 function _parse_stats!(stats, text)
     m = match(
@@ -29,15 +27,15 @@ function _stats_from_iv_ev(
 )
     dex_field == :hp && return _stats_from_iv_ev_hp(iv, ev, base, level)
     value = (2base + iv + ev ÷ 4) * level ÷ 100 + 5
-    if dex_field == up
+    if dex_field ≡ up
         value = value * 11 ÷ 10
-    elseif dex_field == down
+    elseif dex_field ≡ down
         value = value * 9 ÷ 10
     end
     value
 end
 
-function calculate_stats(poke::DexPokemon, level::Int64, evs::Stats, ivs::Stats, nature::Missable{NatureID})
+function calculate_stats(poke::DexPokemon, level::Int64, evs::Stats, ivs::Stats, nature::Missable{Nature})
     stats = Stats()
     up, down = VsRecorder.get_nature_effect(nature)
     for (field, dex_field) in zip(STATS_FIELDS, DEX_STATS_FIELDS)
@@ -169,9 +167,9 @@ function _stats_to_iv_ev(
     if _stats_from_iv_ev(31, 0, base, level, dex_field, up, down) == value
         return 31, 0
     end
-    if dex_field == up
+    if dex_field ≡ up
         value = cld(value * 10, 11)
-    elseif dex_field == down
+    elseif dex_field ≡ down
         value = cld(value * 10, 9)
     end
     t = cld((value - 5) * 100, level) - 2base

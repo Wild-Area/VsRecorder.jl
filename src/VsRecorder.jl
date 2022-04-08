@@ -16,7 +16,8 @@ export PokemonBattle,
 include("config.jl")
 include("types/base.jl")
 
-export PokemonID, ItemID, MoveID, AbilityID, NatureID,
+export PokemonID, ItemID, MoveID, AbilityID, Nature,
+    PokemonType,
     Gender, GENDER_NULL, GENDER_MALE, GENDER_FEMALE
 include("types/identifiers.jl")
 export Player, Stats, Pokemon, Team
