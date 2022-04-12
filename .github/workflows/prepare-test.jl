@@ -8,6 +8,6 @@ write(
 )
 import Pkg
 Pkg.activate(".")
-Pkg.develop(url="https://github.com/sunoru/Tesseract.jl.git")
-Pkg.develop(url="https://github.com/sunoru/SimpleI18n.jl.git")
 Pkg.develop(url="https://github.com/Wild-Area/VsRecorderBase.jl.git")
+Pkg.develop(url="https://github.com/sunoru/SimpleI18n.jl.git")
+Pkg.develop(url="https://github.com/sunoru/Tesseract.jl.git")
