@@ -45,7 +45,7 @@ function _get_resized_gender_icons(ctx, height)
     end
     h, w = size(icons[1])  # (50, 50)
     if h != height
-        new_size = height, w * line_h ÷ h
+        new_size = height, w * height ÷ h
         icons = [imresize(icon, new_size) for icon in icons]
         icon_masks = [imresize(mask, new_size) for mask in icon_masks]
         data.resized_gender_icons = icons
@@ -57,7 +57,7 @@ end
 function parse_gender(line, ctx::PokemonContext)
     line_h, line_w = size(line)
     icons, icon_masks = _get_resized_gender_icons(ctx, line_h)
-    ch = line_h ÷ 2
+    ch = cld(line_h, 2)
     indices = (ch:ch, 1:line_w)
     (female_pos, female_dist), (male_pos, male_dist) = (
         template_match(

@@ -41,4 +41,6 @@ include("main.jl")
 using Reexport: @reexport
 @reexport using VsRecorderBase.API
 
+include("boot.jl")
+
 end # module
