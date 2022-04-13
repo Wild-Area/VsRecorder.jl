@@ -8,7 +8,7 @@ function VsRecorderBase.vs_init!(ctx::PokemonContext{DefaultStrategy})
     ocr_language = ctx.config.ocr_language
     if isfile(tessdata_path, "$ocr_language.traineddata")
         # Load specialized OCR trained data.
-        VsRecorderBase.Tesseract.tess_init(
+        Tesseract.tess_init(
             ctx.ocr_instances[ocr_language],
             ocr_language,
             tessdata_path

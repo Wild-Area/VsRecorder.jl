@@ -4,6 +4,7 @@ using Artifacts, Dates
 
 using SimpleI18n
 using VsRecorderBase
+import Tesseract
 
 include("io.jl")
 export VsI18n
