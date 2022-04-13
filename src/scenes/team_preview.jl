@@ -132,7 +132,7 @@ function _parse_number(img, i, player, ctx, selected, area_type)
     if selected
         text_area = complement.(text_area)
     end
-    ocr(Int, text_area, ctx.ocr_instance_eng)
+    ocr(Int, text_area, ctx; language = "eng")
 end
 
 parse_level(img, i, player, ctx, selected=false) =
@@ -145,7 +145,7 @@ function parse_name(img, player, ctx; threshold = 0.35f0)
     player == 3 && return ""
     text_area = get_area(img, 1, player, PLAYER_NAME)
     text_area = prepare_text_for_ocr(text_area, threshold)
-    ocr(text_area, ctx.data.name_ocr_instance)
+    ocr_multiple_lang(text_area, ctx)
 end
 
 # player == 1,2,3,4 for A,B,A-Selecting,B-Selecting

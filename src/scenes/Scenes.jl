@@ -1,7 +1,6 @@
 module Scenes
 
 using VsRecorderBase
-using VsRecorderBase: @forward
 using ..VsRecorder
 using ..VsRecorder: AbstractPokemonScene,
     PokemonContext, BattleContext,

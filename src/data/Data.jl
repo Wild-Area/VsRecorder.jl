@@ -2,7 +2,6 @@ module Data
 
 using Artifacts
 using VsRecorderBase
-using VsRecorderBase: OrderedDict, @forward
 
 import SimpleI18n
 using SimpleI18n: i18n
@@ -24,7 +23,7 @@ export poke_dex, move_dex,
     search_dex
 include("dex.jl")
 
-export pokemon_icons, item_icons, gender_icons
+export pokemon_icons, item_icons, gender_icons, type_icons
 include("icon_sheets.jl")
 
 export import_team, export_team

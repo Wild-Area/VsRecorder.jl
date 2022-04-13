@@ -288,7 +288,9 @@ function export_poke(poke::Pokemon; language = "en")
     println(io, "Level: ", level)
     nature, ivs, evs = inv_calculate_stats(poke, level)
     _print_stats(io, "EVs: ", evs, 0)
-    println(io, i18n(nature, language = lang), " Nature")
+    if !ismissing(nature)
+        println(io, i18n(nature, language = lang), " Nature")
+    end
     _print_stats(io, "IVs: ", ivs, 31)
     for move in poke.moves
         println(io, "- ", i18n(move, language = lang))

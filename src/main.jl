@@ -4,8 +4,18 @@ using VsRecorder.Scenes: feature_image_name
 
 function VsRecorderBase.vs_init!(ctx::PokemonContext{DefaultStrategy})
     invoke(vs_init!, Tuple{VsContext{DefaultStrategy}}, ctx)
+    tessdata_path = datapath("tessdata")
+    ocr_language = ctx.config.ocr_language
+    if isfile(tessdata_path, "$ocr_language.traineddata")
+        # Load specialized OCR trained data.
+        VsRecorderBase.Tesseract.tess_init(
+            ctx.ocr_instances[ocr_language],
+            ocr_language,
+            tessdata_path
+        )
+    end
+    init_multiple_ocr!(ctx, ["chi_sim+chi_tra", "jpn", "kor", "fra+deu+spa+ita+eng"])
     data = ctx.data
-    data.name_ocr_instance = create_ocr_instance(all_ocr_languages())
     data.context = ParsingContext()
     Data.initialize_icons()
     ctx

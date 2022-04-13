@@ -2,7 +2,7 @@ module VsI18n
 
 using SimpleI18n
 
-using VsRecorderBase: download_ocr_language
+using VsRecorderBase: download_ocr_language, enum_to_string
 using ..VsRecorder: datapath
 
 export GlobalI18nContext, GameLanguage
@@ -29,7 +29,6 @@ end
     DE
     IT
 end
-Base.string(l::GameLanguage) = lowercase(invoke(string, Tuple{Enum}, l))
 
 const OCR_LANGUAGES = Dict(
     EN => "eng",
@@ -78,8 +77,8 @@ function default_language(locale = SimpleI18n.get_system_language())
     end
 end
 
-# The order of languages matters.
-all_ocr_languages() = "chi_sim+chi_tra+jpn+kor+fra+deu+spa+ita+eng"
+get_code(lang::AbstractString) = SimpleI18n.parse_locale_name(lang)
+get_code(lang::GameLanguage) = get_code(enum_to_string(lang))
 
 function download_all_ocr_languages()
     for lang in values(OCR_LANGUAGES)

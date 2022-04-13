@@ -27,7 +27,7 @@ end
         [50, 50, 50, 50, 50, 50],
         ["leftovers", "life-orb", "mago-berry", "weakness-policy", "sitrus-berry", "iapapa-berry"],
         [],
-        "露 露", "Zoe"
+        "露露", "Zoe"
     )
     frame1 = VsFrame(image = VsRecorder.load_data("scenes", "zhs", "team-preview.png"))
     parsed1 = vs_tryparse_scene(TeamPreview, frame1, ctx)
@@ -45,7 +45,7 @@ end
         [50, 50, 50, 50, 50, 50],
         ["choice-scarf", "life-orb", "focus-sash", "rusted-sword", "psychic-seed", "white-herb"],
         [175, 151, 1, 189, 177, 165],
-        "", "あか つき"
+        "", "あかつき"
     )
     frame2 = VsFrame(image = VsRecorder.load_data("scenes", "zhs", "team-preview-selecting.png"))
     parsed2 = vs_tryparse_scene(TeamPreviewSelecting, frame2, ctx)

@@ -1,6 +1,6 @@
 import Downloads, JSON
 
-@testset "Team Preview" begin
+@testset "PokePastes" begin
     expected = """蕾冠王-Ice @ 吃剩的東西
 Ability: As One (Glastrier)
 Level: 50

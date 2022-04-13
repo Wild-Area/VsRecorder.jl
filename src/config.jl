@@ -49,7 +49,7 @@ if use_gray_image
     @warn "Using gray image is not recommended for its low accuracy."
 end
 
-set_language!(GlobalI18nContext[], string(language), String[])
+set_language!(GlobalI18nContext[], enum_to_string(language), String[])
 ocr_language = VsI18n.OCR_LANGUAGES[language]
 strategy = DefaultStrategy(
     match_threshold = match_threshold,

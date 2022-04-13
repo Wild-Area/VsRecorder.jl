@@ -1,6 +1,7 @@
 const PokemonIconSheetFile = datapath("sprites", "swsh-pokemon-icons.png")
 const ItemIconSheetFile = datapath("sprites", "swsh-item-icons.png")
 const GenderIconSheetFile = datapath("sprites", "gender-icons.png")
+const TypeIconSheetFile = datapath("sprites", "type-icons.png")
 
 macro _sheet_func(func_name, sheet_name, has_mask = false, preprocess = nothing)
     gray_name = Symbol(sheet_name, :Gray)
@@ -34,10 +35,12 @@ end
     sheet.image .= blur(sheet.image, 1f0)
 end
 @_sheet_func gender_icons GenderIconSheet true
+@_sheet_func type_icons TypeIconSheet
 
 function initialize_icons()
     pokemon_icons()
     item_icons()
     gender_icons()
+    type_icons()
     nothing
 end

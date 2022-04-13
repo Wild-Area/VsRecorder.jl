@@ -14,6 +14,14 @@ const TeamViewMoveRects = [
     Rect((13 + 64 * (i - 1), 476), (TeamViewLineHeight, 320), resolution = DesignResolution)
     for i in 1:4
 ]
+const TeamViewAuthorRect = Rect((877, 512), (64, 334), resolution = DesignResolution)
+const TeamViewTitleRect = Rect((877, 875), (64, 535), resolution = DesignResolution)
+const TeamViewRentalCodeRect = Rect((941, 820), (64, 560), resolution = DesignResolution)
+const TeamViewMoveTypeRects = [
+    Rect((5 + 64 * (i - 1), 414), (64, 64), resolution = DesignResolution)
+    for i in 1:4
+]
+const TypeIconSheetRect = Rect((8, 8), (49, 49))
 
 
 struct TeamView <: AbstractPokemonScene
@@ -72,15 +80,31 @@ function parse_gender(line, ctx::PokemonContext)
 end
 
 function parse_name_level(line, gender_pos, ctx::PokemonContext)
-    has_gender = length(gender_pos) > 0
-    name_box = if has_gender
-        @view line[:, 1:gender_pos[1] - 1]
+    plist = poke_list(ctx)
+    pid, level = if length(gender_pos) > 0  # has gender
+        len = length(gender_pos)
+        gender_start, gender_end = first(gender_pos) + len ÷ 10, last(gender_pos) - len ÷ 10
+        name_box = prepare_text_for_ocr(@view line[:, 1:gender_start - 1])
+        level_box = prepare_text_for_ocr(@view line[:, gender_end + 1:end])
+        # TODO: Check if these are needed
+        # pids = data_search_n(plist, name; n = 5)
+        # dist1, id1 = pids[1]
+        # dist1 < 2 && return id1, 50
+        name = ocr(name_box, ctx)
+        level = ocr(Int, level_box, ctx; language = "eng")
+        data_search(plist, name), level
     else
-        line
+        name_box = prepare_text_for_ocr(line)
+        name = ocr(name_box, ctx)
+        m = match(r"^(.+)Lv(.+)$", name)
+        name, level_string = if isnothing(m)
+            name, name
+        else
+            m.captures[1], m.captures[2]
+        end
+        data_search(plist, name), parse_int(level_string)
     end
-    name_box = prepare_text_for_ocr(name_box)
-    name = ocr(name_box, ctx)
-    PokemonID(name), 50
+    PokemonID(pid), level
 end
 
 function parse_name_line(box, ctx::PokemonContext)
@@ -91,13 +115,93 @@ function parse_name_line(box, ctx::PokemonContext)
     id, gender, level
 end
 
+function _parse_simple_line(::Type{T}, line, dex, ctx) where T
+    line = prepare_text_for_ocr(line)
+    text = ocr(line, ctx)
+    data_search(dex, text) |> T
+end
+
+function parse_ability_line(box, ctx::PokemonContext; poke_id = missing)
+    alist = ability_list(ctx)
+    if !ismissing(poke_id)
+        dex = poke_dex()
+        dex_poke = dex[poke_id]
+        abilities = dex_poke.abilities
+        length(abilities) == 1 && return abilities[1]
+        alist = Dict{AbilityID, String}(
+            ability => alist[ability]
+            for ability in abilities
+        )
+    end
+    _parse_simple_line(AbilityID, box[TeamViewAbilityRect], alist, ctx)
+end
+
+parse_item_line(box, ctx::PokemonContext) =
+    _parse_simple_line(ItemID, box[TeamViewItemRect], item_list(ctx), ctx)
+
+function get_move_with_type(moves, box, i, ctx::PokemonContext)
+    moves = MoveID.(moves)
+    icons = type_icons()
+    icon = box[TeamViewMoveTypeRects[i]]
+    t = table_search(
+        icon, icons,
+        rect = TypeIconSheetRect
+    )
+    t = enum_from_string(t, PokemonType)
+    mdex = move_dex()
+    for move in moves
+        mdex[move].type == t && return move
+    end
+    moves[1]
+end
+
+function parse_move_line(box, i, ctx::PokemonContext)
+    line = box[TeamViewMoveRects[i]]
+    line = Gray.(line)
+    # TODO: check if this threshold is OK
+    Float32(stdmult(⊙, line)) < 0.05f0 && return missing
+    mlist = move_list(ctx)
+    text = ocr(line, ctx)
+    dists = data_search_n(mlist, text, n = 5)
+    dists = [x for x in dists if x[1] == dists[1][1]]
+    move = if length(dists) == 1
+        MoveID(dists[1][2])
+    else
+        moves = [x[2] for x in dists]
+        get_move_with_type(moves, box, i, ctx::PokemonContext)
+    end
+end
+
+function parse_moves(box, ctx::PokemonContext)
+    moves = MoveID[]
+    for i in 1:4
+        move = parse_move_line(box, i, ctx)
+        ismissing(move) && break
+        push!(moves, move)
+    end
+    moves
+end
+
 function parse_pokemon_box(box, ctx::PokemonContext)
     poke = Pokemon()
     poke.id, poke.gender, poke.level = parse_name_line(box, ctx)
+    poke.ability = parse_ability_line(box, ctx; poke_id = poke.id)
+    poke.item = parse_item_line(box, ctx)
+    poke.moves = parse_moves(box, ctx)
     poke
 end
 
 parse_pokemon_box(img, i, ctx::PokemonContext) = parse_pokemon_box(img[TeamViewPokemonBoxRects[i]], ctx)
+
+parse_author(img, ctx::PokemonContext) = ocr_multiple_lang(img[TeamViewAuthorRect], ctx)
+parse_title(img, ctx::PokemonContext) = ocr_multiple_lang(img[TeamViewTitleRect], ctx)
+function parse_rental_code(img, ctx::PokemonContext)
+    text = ocr(img[TeamViewRentalCodeRect], ctx; language = "eng") |> remove_spaces
+    if length(text) == 14
+        text = "$(text[1:4]) $(text[5:8]) $(text[9:12]) $(text[13:14])"
+    end
+    text
+end
 
 function _parse_scene(::Type{TeamView}, frame::VsFrame, ctx::PokemonContext)
     img = image(frame)
@@ -105,5 +209,8 @@ function _parse_scene(::Type{TeamView}, frame::VsFrame, ctx::PokemonContext)
     for i in 1:6
         push!(team.pokemons, parse_pokemon_box(img, i, ctx))
     end
+    team.author = parse_author(img, ctx)
+    team.title = parse_title(img, ctx)
+    team.rental_code = parse_rental_code(img, ctx)
     TeamView(team)
 end
