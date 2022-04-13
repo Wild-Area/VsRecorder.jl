@@ -56,7 +56,8 @@ Level: 50
     frame = VsFrame(image = VsRecorder.load_data("scenes", "zhs", "team-view.png"))
     parsed = vs_tryparse_scene(TeamView, frame, ctx)
     team = parsed.team
-    @test team.title == "達拉斯R賽"
+    # Tesseract has slightly different behaviours on different platforms
+    @test team.title ∈ ("达拉斯R赛", "達拉斯R賽")
     @test team.author == "露露"
     @test team.rental_code == "0000 0008 53NO V8"
     @test export_team(team) == expected
