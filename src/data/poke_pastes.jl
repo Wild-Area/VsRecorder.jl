@@ -261,7 +261,7 @@ end
 
 function export_poke(poke::Pokemon; language = "en")
     if !(language isa VsRecorder.GameLanguage)
-        language = VsRecorder.default_language(language)
+        language = VsRecorder.get_game_language(language)
     end
     lang = lowercase(string(language))
     io = IOBuffer()
@@ -305,7 +305,7 @@ Export a team to a string formatted in PokePaste syntax.
 """
 function export_team(team::Team; language = "en")
     if !(language isa VsRecorder.GameLanguage)
-        language = VsRecorder.default_language(language)
+        language = VsRecorder.get_game_language(language)
     end
     join(
         (export_poke(poke; language = language) for poke in team.pokemons),

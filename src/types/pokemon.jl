@@ -23,9 +23,9 @@ end
     stats::Stats
     ability::AbilityID
     nature::Nature
-    shiny::Bool
-    sent_out::Bool = false
-    dynamaxed::Bool = false
+    sent_out_number::Int  # number of sent out (1/2 for leading pokemons)
+    shiny::Yes
+    dynamaxed::Yes
 end
 
 @missable mutable struct Team

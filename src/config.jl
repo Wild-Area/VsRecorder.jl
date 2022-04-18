@@ -33,7 +33,7 @@ const GlobalVsConfig = Ref{Nullable{
 
 function VsRecorderBase.vs_setup(
     ::Type{PokemonBattle};
-    language::GameLanguage = default_language(),
+    language::GameLanguage = get_game_language(),
     double = true,
     num_skip_frames = 59,
     use_gray_image = false,
@@ -46,7 +46,7 @@ function VsRecorderBase.vs_setup(
 )
 
 if use_gray_image
-    @warn "Using gray image is not recommended for its low accuracy."
+    @warn "Using gray image is strongly unrecommended for its low accuracy."
 end
 
 set_language!(GlobalI18nContext[], enum_to_string(language), String[])

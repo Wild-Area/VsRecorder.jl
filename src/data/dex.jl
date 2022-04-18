@@ -106,9 +106,9 @@ end
 macro _list_dex_func(func_name, id_type, i18n_key)
     i18n_key = string(i18n_key)
     quote
-        function $func_name(language = default_language())
+        function $func_name(language = get_game_language())
             ctx = VsI18n.GlobalI18nContext[]
-            lang = VsI18n.get_code(language)
+            lang = VsI18n.get_code(get_game_language(language))
             SimpleListDex{$id_type}(ctx.data[lang][$i18n_key])
         end
         $func_name(conf::VsConfig) = $func_name(conf.source.language)

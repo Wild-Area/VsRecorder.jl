@@ -193,8 +193,8 @@ end
 
 parse_pokemon_box(img, i, ctx::PokemonContext) = parse_pokemon_box(img[TeamViewPokemonBoxRects[i]], ctx)
 
-parse_author(img, ctx::PokemonContext) = ocr_multiple_lang(prepare_text_for_ocr(img[TeamViewAuthorRect]), ctx)
-parse_title(img, ctx::PokemonContext) = ocr_multiple_lang(prepare_text_for_ocr(img[TeamViewTitleRect]), ctx)
+parse_author(img, ctx::PokemonContext) = ocr_multiple_lang(prepare_text_for_ocr(img[TeamViewAuthorRect]), ctx)[1]
+parse_title(img, ctx::PokemonContext) = ocr_multiple_lang(prepare_text_for_ocr(img[TeamViewTitleRect]), ctx)[1]
 function parse_rental_code(img, ctx::PokemonContext)
     text = ocr(img[TeamViewRentalCodeRect], ctx; language = "eng") |> remove_spaces
     if length(text) == 14

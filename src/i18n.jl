@@ -7,7 +7,7 @@ using ..VsRecorder: datapath
 
 export GlobalI18nContext, GameLanguage
 export get_i18n, download_all_ocr_languages, all_ocr_languages,
-    default_language
+    get_game_language
 
 const GlobalI18nContext = Ref{Union{Nothing, SimpleI18n.I18nContext}}(nothing)
 
@@ -42,7 +42,7 @@ const OCR_LANGUAGES = Dict(
     KO => "kor",
 )
 
-function default_language(locale = SimpleI18n.get_system_language())
+function get_game_language(locale::AbstractString = SimpleI18n.get_system_language())
     lang = lowercase(locale)
     t = split(lang, '_', limit = 2)
     lang, region = if length(t) < 2
@@ -50,8 +50,8 @@ function default_language(locale = SimpleI18n.get_system_language())
     else
         t
     end
-    if lang == "zh"
-        if region ∈ ("hk", "tw", "hant")
+    if lang ∈ ("zh", "chi")
+        if region ∈ ("hk", "tw", "hant", "tra")
             ZHT
         else
             ZHS
@@ -60,22 +60,23 @@ function default_language(locale = SimpleI18n.get_system_language())
         ZHT
     elseif lang == "zhs"
         ZHS
-    elseif lang == "ja"
+    elseif lang ∈ ("ja", "jpn")
         JA
-    elseif lang == "es"
+    elseif lang ∈ ("es", "spa")
         ES
-    elseif lang == "fr"
+    elseif lang ∈ ("fr", "fra")
         FR
-    elseif lang == "de"
+    elseif lang ∈ ("de", "deu")
         DE
-    elseif lang == "it"
+    elseif lang ∈ ("it", "ita")
         IT
-    elseif lang == "ko"
+    elseif lang ∈ ("ko", "kor")
         KO
     else  # defaultly fallback to EN
         EN
     end
 end
+get_game_language(x::GameLanguage) = x
 
 get_code(lang::AbstractString) = SimpleI18n.parse_locale_name(lang)
 get_code(lang::GameLanguage) = get_code(enum_to_string(lang))

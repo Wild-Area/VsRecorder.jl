@@ -8,5 +8,6 @@ using VsRecorder.VsRecorderBase
 
     include("poke_pastes.jl")
     include("team_preview.jl")
+    include("battle_main.jl")
     include("team_view.jl")
 end

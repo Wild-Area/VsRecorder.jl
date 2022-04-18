@@ -145,7 +145,7 @@ function parse_name(img, player, ctx; threshold = 0.35f0)
     player == 3 && return ""
     text_area = get_area(img, 1, player, PLAYER_NAME)
     text_area = prepare_text_for_ocr(text_area; threshold = threshold)
-    ocr_multiple_lang(text_area, ctx)
+    ocr_multiple_lang(text_area, ctx)[1]
 end
 
 # player == 1,2,3,4 for A,B,A-Selecting,B-Selecting

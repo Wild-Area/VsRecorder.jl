@@ -13,12 +13,14 @@ using ..Data
 include("common.jl")
 include("searching.jl")
 include("team_preview.jl")
+include("battle_main.jl")
 include("team_view.jl")
 
 const AvailableScenes = Type[
     Searching,
     TeamPreview, TeamPreviewSelecting,
-    TeamView
+    BattleMain,
+    TeamView,
 ]
 
 end
