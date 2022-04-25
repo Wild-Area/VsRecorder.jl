@@ -1,17 +1,22 @@
 # All values will be English names so that the `yaml` files will be human-readable.
 abstract type VsAbstractID{T} <: SimpleTypeWrapper{T} end
-macro _id_type_wrapper(name, type, i18n_key)
+macro _id_type_wrapper(name, i18n_key)
     i18n_key = string(i18n_key)
+    convert_functions = esc(quote
+        $name(id::String) = $name(Symbol(id))
+        Base.convert(::Type{$name}, id::String) = $name(id)
+    end)
     i18n_function = esc(:(get_i18n_namespace(::Type{$name}) = $i18n_key))
     quote
-        @type_wrapper $name $type nothing VsAbstractID
+        @type_wrapper $name Symbol nothing VsAbstractID
+        $convert_functions
         $i18n_function
     end
 end
-@_id_type_wrapper PokemonID String pokemon
-@_id_type_wrapper ItemID String item
-@_id_type_wrapper MoveID String move
-@_id_type_wrapper AbilityID String ability
+@_id_type_wrapper PokemonID pokemon
+@_id_type_wrapper ItemID item
+@_id_type_wrapper MoveID move
+@_id_type_wrapper AbilityID ability
 
 SimpleI18n.i18n(id::VsAbstractID; language = nothing) = get_i18n(get_i18n_namespace(typeof(id)), id, lang = language)
 

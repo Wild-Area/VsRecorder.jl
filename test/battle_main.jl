@@ -12,6 +12,6 @@ using VsRecorder.Scenes: BattleMain
 
     frame = VsFrame(image = VsRecorder.load_data("scenes", "zhs", "battle-main.png"))
     parsed = vs_tryparse_scene(BattleMain, frame, ctx)
-    @test parsed.player_a_pokes == PokemonID["incineroar", "grimmsnarl"]
-    @test parsed.player_b_pokes == PokemonID["zacian", "regieleki"]
+    @test parsed.player_a_pokes == PokemonID[:incineroar, :grimmsnarl]
+    @test parsed.player_b_pokes == PokemonID[:zacian, :regieleki]
 end
