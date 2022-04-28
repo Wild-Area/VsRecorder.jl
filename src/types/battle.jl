@@ -3,30 +3,7 @@ module BattleEnums
 @enum BattleFormat begin
     SINGLE
     DOUBLE
-    # TODO: Including different rules?
-end
-
-@enum BattleEvent begin
-    BEGINNING
-
-    SWITCH              # [true/false for in/out, pokemon]
-    ABILITY             # [pokemon, ability]
-    ABILITY_EFFECT      # [effect]
-    STATS_CHANGE        # [stat_type, value]
-    USE_MOVE            # [pokemon, move]
-    CHECK_EFFECTIVE     # [0/1/2/3 for no/not very/neutral/very effective]
-    HP_CHANGE           # [pokemon, old, new] Note that old/new can be percentages (in float numbers).
-    MISS                # [pokemon]
-    CRITICAL_HIT        # no arg
-    MOVE_EFFECT         # [effect]
-    FAINT               # [pokemon]
-    ENVIRONMENT_EFFECT  # [effect]
-    DYNAMAX             # [pokemon]
-    FORFEIT             # [true/false for player/opponent]
-
-    UNKNOWN             # [raw_text]
-
-    ENDING              # [0/1/2 for win/tie/loss]
+    # TODO: Include different rules?
 end
 
 @enum BattleResult begin
@@ -40,8 +17,9 @@ end
 @missable mutable struct Event
     id::Int64
     turn::Int64
-    type::BattleEnums.BattleEvent = BattleEnums.UNKNOWN
-    arg::Any
+    # types are defined in `battle.yaml`
+    type::String
+    args::Vector{String}
 end
 
 @missable mutable struct Battle

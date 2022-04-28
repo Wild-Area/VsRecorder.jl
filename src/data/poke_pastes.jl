@@ -113,6 +113,10 @@ function import_poke(input::AbstractString)
         elseif key == "IVs"
             _parse_stats!(ivs, values)
         elseif key == "Ability"
+            if length(dex_poke.abilities) == 1
+                poke.ability = dex_poke.abilities[1]
+                continue
+            end
             for id in dex_poke.abilities
                 if adex[id] == values
                     poke.ability = id

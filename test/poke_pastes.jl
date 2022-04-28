@@ -1,7 +1,7 @@
 import Downloads, JSON
 
 @testset "PokePastes" begin
-    expected = """蕾冠王-Ice @ 吃剩的東西
+    expected = """蕾冠王（結凍頭） @ 吃剩的東西
 Ability: As One (Glastrier)
 Level: 50
 EVs: 252 HP / 4 Atk / 252 Spe
@@ -70,7 +70,7 @@ IVs: 0 Atk
         title = input["title"],
         author = input["author"],
         notes = input["notes"]
-    ) 
+    )
     output = export_team(team, language = "zht")
     @test strip(output) == expected
 end

@@ -18,7 +18,10 @@ end
 @_id_type_wrapper MoveID move
 @_id_type_wrapper AbilityID ability
 
-SimpleI18n.i18n(id::VsAbstractID; language = nothing) = get_i18n(get_i18n_namespace(typeof(id)), id, lang = language)
+SimpleI18n.i18n(id::VsAbstractID; language = nothing) = get_i18n(
+    get_i18n_namespace(typeof(id)), id,
+    lang = language, default = id
+)
 
 @enum Gender begin
     GENDER_NULL

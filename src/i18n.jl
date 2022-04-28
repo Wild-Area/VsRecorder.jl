@@ -91,9 +91,9 @@ function download_all_ocr_languages()
     true
 end
 
-function get_i18n(path...; lang = nothing)
+function get_i18n(path...; lang = nothing, default = nothing)
     key = join(path, '.')
-    i18n(GlobalI18nContext[], key; language = lang)
+    i18n(GlobalI18nContext[], key, isnothing(default) ? key : default; language = lang)
 end
 
 end
