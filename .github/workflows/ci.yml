@@ -22,7 +22,20 @@ jobs:
         with:
           repository: Wild-Area/vs-recorder-data
           path: ./data
-          lfs: true
+
+      - name: Create LFS file list
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+        working-directory: ./data
+      - name: Restore LFS cache
+        uses: actions/cache@v2
+        id: lfs-cache
+        with:
+          path: ./data/.git/lfs
+          key: ${{ runner.os }}-lfs-${{ hashFiles('./data/.lfs-assets-id') }}-v1
+      - name: Git LFS Pull
+        run: git lfs pull
+        working-directory: ./data
+
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
